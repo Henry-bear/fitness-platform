@@ -1,0 +1,79 @@
+.rbc-calendar {
+    font-family: Arial, sans-serif;
+}
+
+.rbc-toolbar-label {
+    color: #f97316;
+    font-weight: bold;
+}
+
+.rbc-header {
+    background-color: #f97316 !important;
+    /* Tailwind orange-400 */
+    color: white !important;
+    font-weight: bold;
+    padding: 4px 0;
+    border-bottom: 1px solid #e5e7eb;
+    /* Tailwind zinc-200 */
+}
+
+/* 左側時間欄位的樣式強化 */
+.rbc-time-content {
+    border-top: 1px solid #e5e7eb;
+    /* Tailwind zinc-200 */
+}
+
+.rbc-time-gutter {
+    background-color: #f9fafb;
+    /* Tailwind gray-50 */
+    color: #374151;
+    /* Tailwind gray-700 */
+    font-weight: 500;
+    font-size: 0.875rem;
+    padding-left: 3px;
+    padding-right: 6px;
+}
+
+.rbc-toolbar button {
+    color: black !important;
+    background: none !important;
+    border: 1px solid #ccc !important;
+    margin: 0 2px !important;
+    padding: 6px 10px !important;
+    border-radius: 4px !important;
+    cursor: pointer !important;
+}
+
+.rbc-toolbar button.rbc-active {
+    background-color: #f97316 !important;
+    color: white !important;
+}
+
+.rbc-event {
+    font-size: 14px !important;
+    padding: 2px 4px !important;
+    white-space: normal !important;
+    line-height: 1.2 !important;
+    background-color: #fb923c !important;
+    color: white !important;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.rbc-event-content {
+    white-space: normal !important;
+    overflow-wrap: break-word !important;
+}
+
+.rbc-time-slot {
+    min-height: 40px;
+}
+
+.rbc-time-content {
+    overflow-y: auto;
+}
+
+.rbc-time-header-cell,
+.rbc-timeslot-group {
+    border-color: #e2e8f0 !important;
+}
