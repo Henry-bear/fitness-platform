@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { onAuthStateChanged, User } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import { auth } from "@/lib/firebase";
-
 import Navbar from "@/components/Navbar";
 import LoginModal from "@/components/LoginModal";
 import RegisterModal from "@/components/RegisterModal";
@@ -13,7 +12,8 @@ import BodyMetricModal from "@/components/BodyMetricModal";
 import BodyMetricChart from "@/components/BodyMetricChart";
 import GlowWaveText from "@/components/GlowWaveText";
 import LatestBodyMetric from "@/components/LatestBodyMetric";
-import { toast } from "sonner";
+import { useCustomClaimRole } from "../hooks/useCustomClaimRole";
+import BookingBell from "@/components/BookingBell";
 
 const motivationalQuotes = [
     "堅持不懈，會讓你看到意想不到的成長。",
@@ -33,7 +33,8 @@ export default function MemberPage() {
     const [showMetricModal, setShowMetricModal] = useState(false);
     const [authLoading, setAuthLoading] = useState(true);
     const [quote, setQuote] = useState("");
-    const [refreshTrigger] = useState(0);
+    const [refreshTrigger, setRefreshTrigger] = useState(Date.now());
+    const { role, loading: roleLoading } = useCustomClaimRole(user ?? null);
     const router = useRouter();
 
     useEffect(() => {
@@ -54,21 +55,20 @@ export default function MemberPage() {
     }, [router]);
 
 
+    const handleRefresh = () => {
+        setRefreshTrigger(Date.now());
+    };
+
     return (
         <>
             {/* 全頁 Modal */}
             {showLogin && <LoginModal onClose={() => setShowLogin(false)} />}
             {showRegister && <RegisterModal onClose={() => setShowRegister(false)} />}
             {showWorkoutModal && user && (
-                <WorkoutForm user={user} onClose={() => setShowWorkoutModal(false)} />
+                <WorkoutForm user={user} onClose={() => setShowWorkoutModal(false)} onSaved={handleRefresh} />
             )}
             {showMetricModal && user?.uid && (
-                <BodyMetricModal
-                    userId={user.uid}
-                    onClose={() => setShowMetricModal(false)}
-                    onSaved={() => {
-                        toast.success("已儲存最新紀錄");
-                    }} />
+                <BodyMetricModal userId={user.uid} onClose={() => setShowMetricModal(false)} onSaved={handleRefresh} />
             )}
             {/* 共用導覽列 */}
             <Navbar
@@ -79,6 +79,8 @@ export default function MemberPage() {
                 onAddWorkout={() => setShowWorkoutModal(true)}
                 user={user ? { displayName: user.displayName } : undefined}
                 authLoading={authLoading}
+                role={role}
+                roleLoading={roleLoading}
             />
             <main className="min-h-screen bg-black text-white px-4 pt-16 text-center">
                 {/* 歡迎區塊 */}
@@ -90,10 +92,15 @@ export default function MemberPage() {
                     colorMode="white"
                     className="text-lg italic mb-6"
                 />
-                {user && <LatestBodyMetric user={user} userId={user.uid} refreshTrigger={refreshTrigger} />}
+                {user && <LatestBodyMetric userId={user.uid} user={user} refreshTrigger={refreshTrigger} />}
 
                 {/* 歷史紀錄區 */}
+
                 {user && <BodyMetricChart userId={user.uid} refreshTrigger={refreshTrigger} />}
+
+                <div className="fixed bottom-4 right-4 z-50">
+                    {user && <BookingBell user={user} />}
+                </div>
             </main>
         </>
     );

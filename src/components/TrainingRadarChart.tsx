@@ -7,6 +7,7 @@ import { collection, getDocs } from "firebase/firestore";
 import {
     TooltipProps, Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Tooltip, ResponsiveContainer, Text
 } from "recharts";
+import dayjs from "dayjs";
 
 interface Props {
     user: User;
@@ -27,10 +28,10 @@ interface TooltipData {
 export default function TrainingRadarChart({ user, refreshTrigger }: Props) {
     const [data, setData] = useState<TooltipData[]>([]);
     const [selectedMonth, setSelectedMonth] = useState(() => {
-        const now = new Date();
-        return now.toISOString().slice(0, 7);
+        const now = dayjs().format("YYYY-MM");
+        console.log("🎯 初始 selectedMonth:", now);
+        return now;
     });
-
     const allParts = useMemo(() => ["胸部", "背部", "腿部", "肩部", "腹部", "手臂"], []);
 
     // ✅ 最初版的 Tooltip：只顯示訓練次數與前三筆記錄
@@ -65,7 +66,8 @@ export default function TrainingRadarChart({ user, refreshTrigger }: Props) {
 
             snapshot.forEach((doc) => {
                 const workout = doc.data();
-                if (workout.date && workout.date.startsWith(selectedMonth)) {
+                if (workout.date &&
+                    dayjs(workout.date).format("YYYY-MM") === selectedMonth) {
                     const date = workout.date;
                     const exercises = workout.exercises || [];
                     const grouped: Record<string, string[]> = {};
@@ -98,12 +100,11 @@ export default function TrainingRadarChart({ user, refreshTrigger }: Props) {
         fetchData();
     }, [user.uid, selectedMonth, refreshTrigger, allParts]);
 
-    const monthOptions = Array.from({ length: 6 }, (_, i) => {
-        const date = new Date(); // 每次都 new 一次新的 Date 物件
-        date.setDate(1);
-        date.setMonth(date.getMonth() - (5 - i));
-        return date.toISOString().slice(0, 7);
-    }).reverse(); // 從 2025-05 → 2024-12;
+    const monthOptions = useMemo(() => {
+        return Array.from({ length: 6 }, (_, i) =>
+            dayjs().subtract(i, "month").format("YYYY-MM")
+        );
+    }, []);
 
 
     const hasData = data.some((d) => d.count > 0);
