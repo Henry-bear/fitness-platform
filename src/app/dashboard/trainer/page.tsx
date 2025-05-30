@@ -188,7 +188,7 @@ export default function TrainerDashboardPage() {
             setEvents(eventsData);
             setShowConfirmDialog(false);
             setSelectedEvent(null);
-        } catch (err) {
+        } catch {
             toast.error("取消失敗");
         }
     };

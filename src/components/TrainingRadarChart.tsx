@@ -13,6 +13,11 @@ interface Props {
     refreshTrigger: number;
 }
 
+interface Exercise {
+    part?: string;
+    type?: string;
+}
+
 interface TooltipData {
     part: string;
     count: number;
@@ -65,7 +70,7 @@ export default function TrainingRadarChart({ user, refreshTrigger }: Props) {
                     const exercises = workout.exercises || [];
                     const grouped: Record<string, string[]> = {};
 
-                    exercises.forEach((ex: any) => {
+                    exercises.forEach((ex: Exercise) => {
                         const part = ex.part?.trim();
                         const type = ex.type;
                         if (part && type && allParts.includes(part)) {
