@@ -245,7 +245,7 @@ export default function TrainerDashboardPage() {
                     onClose={() => setShowModal(false)}
                     onConfirm={handleConfirmBooking}
                     students={students}
-                    slotInfo={selectedSlot}
+                    slotInfo={selectedSlot as SlotInfo | null}
                 />
                 <ConfirmDialog
                     open={showConfirmDialog}
