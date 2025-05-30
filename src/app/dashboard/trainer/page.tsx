@@ -240,13 +240,15 @@ export default function TrainerDashboardPage() {
                         setShowConfirmDialog(true);
                     }}
                 />
-                <BookingModal
-                    open={showModal}
-                    onClose={() => setShowModal(false)}
-                    onConfirm={handleConfirmBooking}
-                    students={students}
-                    slotInfo={selectedSlot as SlotInfo | null}
-                />
+                {showModal && selectedSlot && (
+                    <BookingModal
+                        open={showModal}
+                        onClose={() => setShowModal(false)}
+                        onConfirm={handleConfirmBooking}
+                        students={students}
+                        slotInfo={selectedSlot}
+                    />
+                )}
                 <ConfirmDialog
                     open={showConfirmDialog}
                     title="取消預約"
