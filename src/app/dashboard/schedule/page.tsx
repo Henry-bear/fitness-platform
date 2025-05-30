@@ -29,7 +29,7 @@ export default function ScheduleAdminPage() {
     const [scheduleList, setScheduleList] = useState<GroupClass[]>([]);
     const [confirmOpen, setConfirmOpen] = useState(false);
     const [selectedId, setSelectedId] = useState<string | null>(null);
-    const [bookingCount, setBookingCount] = useState<number>(0);
+    const [, setBookingCount] = useState<number>(0);
     const [confirmMessage, setConfirmMessage] = useState<string>("你確定要刪除這堂課嗎？");
 
 

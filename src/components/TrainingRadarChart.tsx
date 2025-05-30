@@ -5,7 +5,7 @@ import { User } from "firebase/auth";
 import { db } from "@/lib/firebase";
 import { collection, getDocs } from "firebase/firestore";
 import {
-    Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Tooltip, ResponsiveContainer, Text
+    TooltipProps, Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Tooltip, ResponsiveContainer, Text
 } from "recharts";
 
 interface Props {
@@ -29,7 +29,7 @@ export default function TrainingRadarChart({ user, refreshTrigger }: Props) {
     const allParts = ["胸部", "背部", "腿部", "肩部", "腹部", "手臂"];
 
     // ✅ 最初版的 Tooltip：只顯示訓練次數與前三筆記錄
-    const CustomRadarTooltip = ({ active, payload }: any) => {
+    const CustomRadarTooltip = ({ active, payload }: TooltipProps<any, any>) => {
         if (active && payload?.length) {
             const { part, count, details } = payload[0].payload;
             return (
@@ -91,7 +91,7 @@ export default function TrainingRadarChart({ user, refreshTrigger }: Props) {
         };
 
         fetchData();
-    }, [user.uid, selectedMonth, refreshTrigger]);
+    }, [user.uid, selectedMonth, refreshTrigger, allParts]);
 
     const monthOptions = Array.from({ length: 6 }, (_, i) => {
         const date = new Date(); // 每次都 new 一次新的 Date 物件
@@ -103,7 +103,11 @@ export default function TrainingRadarChart({ user, refreshTrigger }: Props) {
 
     const hasData = data.some((d) => d.count > 0);
 
-    const renderRadiusTick = ({ payload, x, y }: any) => {
+    const renderRadiusTick = ({ payload, x, y }: {
+        payload: { value: number };
+        x: number;
+        y: number;
+    }) => {
         return (
             <Text
                 x={x}
@@ -120,7 +124,13 @@ export default function TrainingRadarChart({ user, refreshTrigger }: Props) {
         );
     };
 
-    const renderAngleTick = ({ payload, x, y, cx, cy }: any) => {
+    const renderAngleTick = ({ payload, x, y, cx, cy }: {
+        payload: { value: string };
+        x: number;
+        y: number;
+        cx: number;
+        cy: number;
+    }) => {
         const radiusOffset = 12;
         const angleRad = Math.atan2(y - cy, x - cx);
         const offsetX = Math.cos(angleRad) * radiusOffset;

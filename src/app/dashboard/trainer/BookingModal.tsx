@@ -1,12 +1,13 @@
 "use client";
 import { useEffect, useState } from "react";
+import { SlotInfo } from "react-big-calendar";
 
 type Props = {
     open: boolean;
     onClose: () => void;
     onConfirm: (studentId: string) => void;
     students: { id: string; name: string }[];
-    slotInfo: any;
+    slotInfo: SlotInfo;
 };
 
 export default function BookingModal({ open, onClose, onConfirm, students, slotInfo }: Props) {

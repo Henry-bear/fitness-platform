@@ -10,22 +10,15 @@ import {
     where,
     doc,
     deleteDoc,
-    Timestamp,
 } from "firebase/firestore";
 import { CalendarCheck } from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 
-import dayjs from "dayjs";
-
 type Props = {
     user: User;
 };
 
-type Booking = {
-    groupClassId: string;
-    createdAt: Timestamp;
-};
 
 type GroupClass = {
     id: string;
@@ -40,24 +33,24 @@ export default function BookingBell({ user }: Props) {
     const [showModal, setShowModal] = useState(false);
     const [bookings, setBookings] = useState<(GroupClass & { isRemoving?: boolean })[]>([]);
 
-    const fetchBookings = async () => {
-        const bookingSnap = await getDocs(
-            query(collection(db, "groupBookings"), where("userId", "==", user.uid))
-        );
-        const classIds = bookingSnap.docs.map((doc) => doc.data().groupClassId);
-
-        const classSnap = await getDocs(collection(db, "groupSchedule"));
-        const classList: GroupClass[] = classSnap.docs.map((doc) => ({
-            id: doc.id,
-            ...(doc.data() as Omit<GroupClass, "id">),
-        }));
-
-        const filtered = classList.filter((item) => classIds.includes(item.id));
-        setBookings(filtered);
-    };
-
     useEffect(() => {
-        if (user) fetchBookings();
+        if (!user) return;
+        const fetchBookings = async () => {
+            const bookingSnap = await getDocs(
+                query(collection(db, "groupBookings"), where("userId", "==", user.uid))
+            );
+            const classIds = bookingSnap.docs.map((doc) => doc.data().groupClassId);
+
+            const classSnap = await getDocs(collection(db, "groupSchedule"));
+            const classList: GroupClass[] = classSnap.docs.map((doc) => ({
+                id: doc.id,
+                ...(doc.data() as Omit<GroupClass, "id">),
+            }));
+
+            const filtered = classList.filter((item) => classIds.includes(item.id));
+            setBookings(filtered);
+        };
+        fetchBookings();
     }, [user]);
 
     const handleCancel = async (classId: string) => {

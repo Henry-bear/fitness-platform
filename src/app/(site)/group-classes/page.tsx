@@ -40,7 +40,7 @@ export default function GroupClassesPage() {
     const { role, loading: roleLoading } = useCustomClaimRole(user);
     const [showWorkoutModal, setShowWorkoutModal] = useState(false);
     const [showMetricModal, setShowMetricModal] = useState(false);
-    const [selectedClassId, setSelectedClassId] = useState<string | null>(null);
+    const [, setSelectedClassId] = useState<string | null>(null);
     const [bookedClassIds, setBookedClassIds] = useState<string[]>([]);
 
 

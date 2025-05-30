@@ -20,7 +20,7 @@ export default function Home() {
   const [showMetricModal, setShowMetricModal] = useState(false);
   const [showWorkoutModal, setShowWorkoutModal] = useState(false);
   const [authLoading, setAuthLoading] = useState(true);
-  const [refreshTrigger, setRefreshTrigger] = useState(Date.now());
+  const [, setRefreshTrigger] = useState(Date.now());
   const { role, loading: roleLoading } = useCustomClaimRole(user ?? null);
 
   useEffect(() => {
