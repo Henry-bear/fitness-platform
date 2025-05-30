@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { User } from "firebase/auth";
 import { db } from "@/lib/firebase";
 import { collection, getDocs } from "firebase/firestore";
@@ -26,10 +26,10 @@ export default function TrainingRadarChart({ user, refreshTrigger }: Props) {
         return now.toISOString().slice(0, 7);
     });
 
-    const allParts = ["胸部", "背部", "腿部", "肩部", "腹部", "手臂"];
+    const allParts = useMemo(() => ["胸部", "背部", "腿部", "肩部", "腹部", "手臂"], []);
 
     // ✅ 最初版的 Tooltip：只顯示訓練次數與前三筆記錄
-    const CustomRadarTooltip = ({ active, payload }: TooltipProps<any, any>) => {
+    const CustomRadarTooltip = ({ active, payload }: TooltipProps<string, string>) => {
         if (active && payload?.length) {
             const { part, count, details } = payload[0].payload;
             return (

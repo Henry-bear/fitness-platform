@@ -14,6 +14,7 @@ import { auth, db } from "@/lib/firebase";
 import { useCustomClaimRole } from "@/app/hooks/useCustomClaimRole";
 import { collection, getDocs, getDoc, doc } from "firebase/firestore";
 import ConfirmDialog from "@/components/ConfirmDialog";
+import { SlotInfo } from "react-big-calendar";
 
 // 型別：事件格式
 type TrainerEvent = RBCEvent & {
@@ -30,7 +31,7 @@ export default function TrainerDashboardPage() {
     const [events, setEvents] = useState<TrainerEvent[]>([]);
     const [currentView, setCurrentView] = useState<View>("week");
     const [currentDate, setCurrentDate] = useState<Date>(new Date());
-    const [selectedSlot, setSelectedSlot] = useState<any>(null);
+    const [selectedSlot, setSelectedSlot] = useState<SlotInfo | null>(null);
     const [showModal, setShowModal] = useState(false);
     const [students, setStudents] = useState<{ id: string; name: string }[]>([]);
     const [selectedEvent, setSelectedEvent] = useState<TrainerEvent | null>(null);
@@ -138,7 +139,7 @@ export default function TrainerDashboardPage() {
                         if (studentDoc.exists()) {
                             studentName = studentDoc.data().name || data.studentId;
                         }
-                    } catch (e) { }
+                    } catch { }
                     return {
                         id: docSnap.id,
                         title: `學生 ${studentName}`,
@@ -173,7 +174,9 @@ export default function TrainerDashboardPage() {
                     if (studentDoc.exists()) {
                         studentName = studentDoc.data().name || data.studentId;
                     }
-                } catch (e) { }
+                } catch (err) {
+                    console.error(err);
+                }
                 return {
                     id: docSnap.id,
                     title: `學生 ${studentName}`,
