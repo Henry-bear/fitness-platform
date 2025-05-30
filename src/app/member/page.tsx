@@ -33,7 +33,7 @@ export default function MemberPage() {
     const [showMetricModal, setShowMetricModal] = useState(false);
     const [authLoading, setAuthLoading] = useState(true);
     const [quote, setQuote] = useState("");
-    const [refreshTrigger, setRefreshTrigger] = useState(0);
+    const [refreshTrigger] = useState(0);
     const router = useRouter();
 
     useEffect(() => {
