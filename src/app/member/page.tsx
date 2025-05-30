@@ -13,6 +13,7 @@ import BodyMetricModal from "@/components/BodyMetricModal";
 import BodyMetricChart from "@/components/BodyMetricChart";
 import GlowWaveText from "@/components/GlowWaveText";
 import LatestBodyMetric from "@/components/LatestBodyMetric";
+import { toast } from "sonner";
 
 const motivationalQuotes = [
     "堅持不懈，會讓你看到意想不到的成長。",
@@ -32,6 +33,7 @@ export default function MemberPage() {
     const [showMetricModal, setShowMetricModal] = useState(false);
     const [authLoading, setAuthLoading] = useState(true);
     const [quote, setQuote] = useState("");
+    const [refreshTrigger, setRefreshTrigger] = useState(0);
     const router = useRouter();
 
     useEffect(() => {
@@ -61,7 +63,12 @@ export default function MemberPage() {
                 <WorkoutForm user={user} onClose={() => setShowWorkoutModal(false)} />
             )}
             {showMetricModal && user?.uid && (
-                <BodyMetricModal userId={user.uid} onClose={() => setShowMetricModal(false)} />
+                <BodyMetricModal
+                    userId={user.uid}
+                    onClose={() => setShowMetricModal(false)}
+                    onSaved={() => {
+                        toast.success("已儲存最新紀錄");
+                    }} />
             )}
             {/* 共用導覽列 */}
             <Navbar
@@ -83,10 +90,10 @@ export default function MemberPage() {
                     colorMode="white"
                     className="text-lg italic mb-6"
                 />
-                {user && <LatestBodyMetric userId={user.uid} />}
+                {user && <LatestBodyMetric user={user} userId={user.uid} refreshTrigger={refreshTrigger} />}
 
                 {/* 歷史紀錄區 */}
-                {user && <BodyMetricChart userId={user.uid} />}
+                {user && <BodyMetricChart userId={user.uid} refreshTrigger={refreshTrigger} />}
             </main>
         </>
     );
