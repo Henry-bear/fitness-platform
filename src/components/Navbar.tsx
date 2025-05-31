@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import MobileMenu from "./MobileMenu";
 import { Menu } from "lucide-react";
 
+
 type Props = {
     onLogin?: () => void;
     onRegister?: () => void;
@@ -54,7 +55,7 @@ export default function Navbar({
     const handleLogout = async () => {
         await signOut(auth);
         if (setUser) setUser(null);
-        toast.success("您已成功登出！");
+        toast.success("您已成功登出！", { duration: 2000 });
         router.push("/");
     };
 
