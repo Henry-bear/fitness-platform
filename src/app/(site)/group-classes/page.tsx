@@ -42,7 +42,7 @@ export default function GroupClassesPage() {
     const [showMetricModal, setShowMetricModal] = useState(false);
     const [, setSelectedClassId] = useState<string | null>(null);
     const [bookedClassIds, setBookedClassIds] = useState<string[]>([]);
-
+    const [expandedMobileClassId, setExpandedMobileClassId] = useState<string | null>(null);
 
     const fetchBooking = async (userId: string) => {
         const q = query(
@@ -187,11 +187,16 @@ export default function GroupClassesPage() {
                                 )}
                                 {getDayClasses(day).map((item) => {
                                     const isBooked = bookedClassIds.includes(item.id);
-
+                                    const isExpanded = expandedMobileClassId === item.id;
                                     return (
                                         <div
                                             key={item.id}
                                             className="group relative bg-orange-500 text-white rounded-lg p-3 shadow hover:shadow-lg transition duration-200"
+                                            onClick={() => {
+                                                if (window.innerWidth < 768) {
+                                                    setExpandedMobileClassId((prev) => (prev === item.id ? null : item.id));
+                                                }
+                                            }}
                                         >
                                             <div className="space-y-1">
                                                 <div className="font-bold text-base">{item.title}</div>
@@ -200,7 +205,13 @@ export default function GroupClassesPage() {
                                             </div>
 
                                             <div
-                                                className="absolute bottom-0 left-0 w-full opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto translate-y-4 group-hover:translate-y-0 bg-white text-orange-500 rounded-b-lg px-4 py-3 flex flex-col items-center transition-all duration-300 ease-in-out z-10"
+                                                className={`
+                                                    absolute bottom-0 left-0 w-full
+                                                    bg-white text-orange-500 rounded-b-lg px-4 py-3 flex flex-col items-center z-10
+                                                    transition-all duration-300 ease-in-out
+                                                    ${isExpanded ? "opacity-100 pointer-events-auto translate-y-0" : "opacity-0 pointer-events-none translate-y-4"}
+                                                    group-hover:opacity-100 group-hover:pointer-events-auto group-hover:translate-y-0
+                                                `}
                                             >
                                                 {isBooked ? (
                                                     <>
