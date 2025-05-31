@@ -10,7 +10,6 @@ const navItems = {
     admin: [
         { name: "會員權限管理", path: "/dashboard/users" },
         { name: "團體課程管理", path: "/dashboard/schedule" },
-        { name: "財務管理", path: "/dashboard/performance" },
     ],
     groupCoach: [{
         name: "團課管理", path: "/dashboard/coaches"

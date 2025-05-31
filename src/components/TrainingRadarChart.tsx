@@ -29,7 +29,6 @@ export default function TrainingRadarChart({ user, refreshTrigger }: Props) {
     const [data, setData] = useState<TooltipData[]>([]);
     const [selectedMonth, setSelectedMonth] = useState(() => {
         const now = dayjs().format("YYYY-MM");
-        console.log("🎯 初始 selectedMonth:", now);
         return now;
     });
     const allParts = useMemo(() => ["胸部", "背部", "腿部", "肩部", "腹部", "手臂"], []);
