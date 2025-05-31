@@ -32,7 +32,8 @@ type GroupClass = {
 export default function BookingBell({ user }: Props) {
     const [showModal, setShowModal] = useState(false);
     const [bookings, setBookings] = useState<(GroupClass & { isRemoving?: boolean })[]>([]);
-
+    const [bounceOnce, setBounceOnce] = useState(true);
+    // 載入預約
     useEffect(() => {
         if (!user) return;
         const fetchBookings = async () => {
@@ -78,14 +79,22 @@ export default function BookingBell({ user }: Props) {
     };
 
     return (
-        <div className="fixed bottom-4 right-4 z-50">
-            <button
-                onClick={() => setShowModal(true)}
-                className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-full shadow-lg flex items-center gap-2 animate-bounce [animation-duration:2s]"
+        <div className="fixed z-50 right-4 sm:bottom-4 bottom-auto top-[5.5rem] sm:top-auto">
+            <motion.div
+                initial={{ y: 0 }}
+                animate={bounceOnce ? { y: [0, -10, 0] } : undefined}
+                transition={{ duration: 0.6 }}
+                onAnimationComplete={() => setBounceOnce(false)}
             >
-                <CalendarCheck className="w-5 h-5" />
-                我的預約課程
-            </button>
+                <button
+                    onClick={() => setShowModal(true)}
+                    className={"bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-full shadow-lg flex items-center gap-2"}
+                >
+                    <CalendarCheck className="w-5 h-5" />
+                    {/* 只在桌機版顯示文字 */}
+                    <span className="hidden sm:inline">我的預約課程</span>
+                </button>
+            </motion.div>
 
             <AnimatePresence>
                 {showModal && (

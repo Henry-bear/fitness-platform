@@ -35,6 +35,7 @@ export default function MemberPage() {
     const [quote, setQuote] = useState("");
     const [refreshTrigger, setRefreshTrigger] = useState(Date.now());
     const { role, loading: roleLoading } = useCustomClaimRole(user ?? null);
+    const [menuOpen, setMenuOpen] = useState(false);
     const router = useRouter();
 
     useEffect(() => {
@@ -81,6 +82,8 @@ export default function MemberPage() {
                 authLoading={authLoading}
                 role={role}
                 roleLoading={roleLoading}
+                menuOpen={menuOpen}
+                setMenuOpen={setMenuOpen}
             />
             <main className="min-h-screen bg-black text-white px-4 pt-16 text-center">
                 {/* 歡迎區塊 */}
@@ -97,10 +100,11 @@ export default function MemberPage() {
                 {/* 歷史紀錄區 */}
 
                 {user && <BodyMetricChart userId={user.uid} refreshTrigger={refreshTrigger} />}
-
-                <div className="fixed bottom-4 right-4 z-50">
-                    {user && <BookingBell user={user} />}
-                </div>
+                {!menuOpen && user && (
+                    <div className="fixed bottom-4 right-4 z-50">
+                        <BookingBell user={user} />
+                    </div>)
+                }
             </main>
         </>
     );

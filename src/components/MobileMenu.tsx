@@ -66,7 +66,7 @@ export default function MobileMenu({
 
     return (
         <div
-            className={`fixed top-16 left-0 w-full bg-zinc-900 z-50 px-6 py-4 shadow-md transition-all duration-300 ${className}`}
+            className={`absolute top-full left-0 w-full bg-zinc-900 bg-opacity-95 z-40 px-6 py-4 shadow-md transition-all duration-300 ${className}`}
         >
             {isVisible && (
                 <div className="flex flex-col items-center gap-3">

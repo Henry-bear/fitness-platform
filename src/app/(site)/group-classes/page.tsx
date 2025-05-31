@@ -43,6 +43,7 @@ export default function GroupClassesPage() {
     const [, setSelectedClassId] = useState<string | null>(null);
     const [bookedClassIds, setBookedClassIds] = useState<string[]>([]);
     const [expandedMobileClassId, setExpandedMobileClassId] = useState<string | null>(null);
+    const [menuOpen, setMenuOpen] = useState(false);
 
     const fetchBooking = async (userId: string) => {
         const q = query(
@@ -165,6 +166,8 @@ export default function GroupClassesPage() {
                 roleLoading={roleLoading}
                 onAddWorkout={() => setShowWorkoutModal(true)}
                 onAddMetric={() => setShowMetricModal(true)}
+                menuOpen={menuOpen}
+                setMenuOpen={setMenuOpen}
             />
 
             {/* Modal 控制區塊 */}

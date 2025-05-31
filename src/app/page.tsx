@@ -22,6 +22,7 @@ export default function Home() {
   const [authLoading, setAuthLoading] = useState(true);
   const [, setRefreshTrigger] = useState(Date.now());
   const { role, loading: roleLoading } = useCustomClaimRole(user ?? null);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
@@ -75,6 +76,8 @@ export default function Home() {
           role={role}
           roleLoading={roleLoading}
           authLoading={authLoading}
+          menuOpen={menuOpen}
+          setMenuOpen={setMenuOpen}
         />
 
         {/* Hero 背景區塊 */}

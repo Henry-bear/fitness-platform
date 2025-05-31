@@ -21,6 +21,8 @@ type Props = {
     className?: string;
     role?: string | null;
     roleLoading?: boolean;
+    menuOpen: boolean;
+    setMenuOpen: (open: boolean) => void;
 };
 
 export default function Navbar({
@@ -31,10 +33,11 @@ export default function Navbar({
     user,
     setUser,
     authLoading,
-    role
+    role,
+    menuOpen,
+    setMenuOpen
 }: Props) {
     const router = useRouter();
-    const [menuOpen, setMenuOpen] = useState(false);
     const [isVisible, setIsVisible] = useState(false);
     const [animationClass, setAnimationClass] = useState("");
 
@@ -61,115 +64,116 @@ export default function Navbar({
 
     return (
         <>
-            <div className="relative z-20 w-full px-4 py-4 bg-zinc-900 flex justify-between items-center">
-                {/* Logo */}
-                <Link
-                    href="/"
-                    className="text-3xl font-bold text-orange-400 cursor-pointer hover:opacity-80 transition"
-                >
-                    FitnessWay
-                </Link>
+            <div className="relative z-50">
+                <div className="w-full px-4 py-4 bg-zinc-900 flex justify-between items-center">
+                    {/* Logo */}
+                    <Link
+                        href="/"
+                        className="text-3xl font-bold text-orange-400 cursor-pointer hover:opacity-80 transition"
+                    >
+                        FitnessWay
+                    </Link>
 
-                {/* 桌機版功能區 */}
-                <div className="hidden sm:flex items-center gap-4">
-                    {authLoading ? (
-                        <div className="flex items-center space-x-2">
-                            <div className="w-5 h-5 border-2 border-orange-400 border-t-transparent rounded-full animate-spin"></div>
-                            <span className="text-orange-400 text-sm">載入中</span>
-                        </div>
-                    ) : user ? (
-                        <>
-                            <Link
-                                href="/group-classes"
-                                className="px-4 py-2 bg-orange-400 text-white rounded hover:bg-orange-500 transition"
-                            >
-                                團體課程
-                            </Link>
-
-
-                            <button
-                                onClick={onAddWorkout}
-                                className="px-4 py-2 bg-orange-500 text-white rounded hover:bg-orange-600 cursor-pointer"
-                            >
-                                訓練記錄
-                            </button>
-                            <button
-                                onClick={onAddMetric}
-                                className="px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600 cursor-pointer"
-                            >
-                                數值記錄
-                            </button>
-                            <Link
-                                href="/member"
-                                className="text-white font-medium hover:underline"
-                            >
-                                {user.displayName || "訪客"}
-                            </Link>
-
-                            {(role === "admin" || role === "groupCoach" || role === "personalTrainer") && (
+                    {/* 桌機版功能區 */}
+                    <div className="hidden sm:flex items-center gap-4">
+                        {authLoading ? (
+                            <div className="flex items-center space-x-2">
+                                <div className="w-5 h-5 border-2 border-orange-400 border-t-transparent rounded-full animate-spin"></div>
+                                <span className="text-orange-400 text-sm">載入中</span>
+                            </div>
+                        ) : user ? (
+                            <>
                                 <Link
-                                    href="/dashboard"
-                                    className="px-4 py-2 bg-black text-orange-400 border border-orange-400 rounded hover:bg-orange-500 hover:text-white transition"
+                                    href="/group-classes"
+                                    className="px-4 py-2 bg-orange-400 text-white rounded hover:bg-orange-500 transition"
                                 >
-                                    後台管理
+                                    團體課程
                                 </Link>
-                            )}
 
+
+                                <button
+                                    onClick={onAddWorkout}
+                                    className="px-4 py-2 bg-orange-500 text-white rounded hover:bg-orange-600 cursor-pointer"
+                                >
+                                    訓練記錄
+                                </button>
+                                <button
+                                    onClick={onAddMetric}
+                                    className="px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600 cursor-pointer"
+                                >
+                                    數值記錄
+                                </button>
+                                <Link
+                                    href="/member"
+                                    className="text-white font-medium hover:underline"
+                                >
+                                    {user.displayName || "訪客"}
+                                </Link>
+
+                                {(role === "admin" || role === "groupCoach" || role === "personalTrainer") && (
+                                    <Link
+                                        href="/dashboard"
+                                        className="px-4 py-2 bg-black text-orange-400 border border-orange-400 rounded hover:bg-orange-500 hover:text-white transition"
+                                    >
+                                        後台管理
+                                    </Link>
+                                )}
+
+                                <button
+                                    onClick={handleLogout}
+                                    className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded cursor-pointer"
+                                >
+                                    登出
+                                </button>
+                            </>
+                        ) : (
+                            <>
+                                <button
+                                    onClick={onLogin}
+                                    className="px-4 py-2 border border-orange-400 text-orange-400 hover:bg-orange-500 hover:text-white rounded transition cursor-pointer"
+                                >
+                                    登入
+                                </button>
+                                <button
+                                    onClick={onRegister}
+                                    className="px-4 py-2 border border-transparent bg-orange-500 text-white rounded hover:bg-orange-600 transition cursor-pointer"
+                                >
+                                    註冊
+                                </button>
+                            </>
+                        )}
+                    </div>
+
+                    {/* 手機版 Burger Menu */}
+                    <div className="sm:hidden">
+                        {!authLoading && (
                             <button
-                                onClick={handleLogout}
-                                className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded cursor-pointer"
+                                onClick={toggleMenu}
+                                className="w-12 h-12 flex items-center justify-center text-white transition-transform duration-300 hover:scale-110"
                             >
-                                登出
+                                <Menu size={32} />
                             </button>
-                        </>
-                    ) : (
-                        <>
-                            <button
-                                onClick={onLogin}
-                                className="px-4 py-2 border border-orange-400 text-orange-400 hover:bg-orange-500 hover:text-white rounded transition cursor-pointer"
-                            >
-                                登入
-                            </button>
-                            <button
-                                onClick={onRegister}
-                                className="px-4 py-2 border border-transparent bg-orange-500 text-white rounded hover:bg-orange-600 transition cursor-pointer"
-                            >
-                                註冊
-                            </button>
-                        </>
-                    )}
+                        )}
+                    </div>
+
                 </div>
 
-                {/* 手機版 Burger Menu */}
-                <div className="sm:hidden">
-                    {!authLoading && (
-                        <button
-                            onClick={toggleMenu}
-                            className="w-12 h-12 flex items-center justify-center text-white transition-transform duration-300 hover:scale-110"
-                        >
-                            <Menu size={32} />
-                        </button>
-                    )}
-                </div>
-
+                {/* MobileMenu 選單浮動顯示 */}
+                {menuOpen && !authLoading && (
+                    <MobileMenu
+                        className={`transition-all duration-300 ${animationClass}`}
+                        onAddWorkout={onAddWorkout}
+                        onAddMetric={onAddMetric}
+                        onLogout={handleLogout}
+                        onLogin={onLogin}
+                        onRegister={onRegister}
+                        user={user}
+                        closeMenu={toggleMenu}
+                        isVisible={isVisible}
+                        menuOpen={menuOpen}
+                    />
+                )}
             </div>
-
-            {/* MobileMenu 選單浮動顯示 */}
-            {menuOpen && !authLoading && (
-                <MobileMenu
-                    className={`transition-all duration-300 ${animationClass}`}
-                    onAddWorkout={onAddWorkout}
-                    onAddMetric={onAddMetric}
-                    onLogout={handleLogout}
-                    onLogin={onLogin}
-                    onRegister={onRegister}
-                    user={user}
-                    closeMenu={toggleMenu}
-                    isVisible={isVisible}
-                    menuOpen={menuOpen}
-                />
-            )}
-
         </>
     );
 }
