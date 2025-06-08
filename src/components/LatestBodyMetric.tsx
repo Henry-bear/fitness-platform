@@ -9,7 +9,7 @@ import BodyShape from "@/components/BodyShape";
 import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
 import TrainingRadarChart from "./TrainingRadarChart";
-import { Ruler, Dumbbell } from "lucide-react";
+import { Ruler, Weight } from "lucide-react";
 
 type Props = {
     userId: string;
@@ -106,7 +106,7 @@ export default function LatestBodyMetric({ userId, user, refreshTrigger }: Props
                     <div className="text-2xl font-bold">{height} cm</div>
                 </div>
                 <div className="bg-zinc-900 border border-orange-500 rounded-xl p-4 shadow flex flex-col items-center justify-center min-h-[180px] sm:min-h-[200px] transition duration-300 hover:shadow-lg hover:scale-[1.02] hover:border-orange-300">
-                    <Dumbbell className="w-12 h-12 text-orange-400 mb-2" />
+                    <Weight className="w-12 h-12 text-orange-400 mb-2" />
                     <div className="text-sm text-orange-400 font-medium">體重</div>
                     <div className="text-2xl font-bold">{weight} kg</div>
                 </div>

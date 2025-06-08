@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { addDoc, collection, getDocs, serverTimestamp, Timestamp, query, where, doc, deleteDoc } from "firebase/firestore";
 import { onAuthStateChanged, User } from "firebase/auth";
 import dayjs from "dayjs";
+import isBetween from "dayjs/plugin/isBetween";
+dayjs.extend(isBetween);
 import Navbar from "@/components/Navbar";
 import { useCustomClaimRole } from "../../hooks/useCustomClaimRole";
 import WorkoutForm from "@/components/WorkoutForm";
@@ -138,10 +140,17 @@ export default function GroupClassesPage() {
     };
 
     const getDayClasses = (day: string) => {
+        const today = dayjs();
+        const startOfWeek = today.startOf("week").add(1, "day");// 週一
+        const endOfWeek = startOfWeek.add(6, "day"); // 週日
+
         const filtered = classes.filter((item) => {
             const rawDate = item.date instanceof Timestamp ? item.date.toDate() : new Date(item.date);
-            const classDay = dayjs(rawDate).format("dddd");
-            return weekdayMap[classDay] === day;
+            const classDate = dayjs(rawDate);
+            const classDay = classDate.format("dddd");
+
+            const isInThisWeek = classDate.isBetween(startOfWeek, endOfWeek, "day", "[]");
+            return weekdayMap[classDay] === day && isInThisWeek;
         });
         return filtered.sort((a, b) => a.startTime.localeCompare(b.startTime));
     };
@@ -204,7 +213,11 @@ export default function GroupClassesPage() {
                                             <div className="space-y-1">
                                                 <div className="font-bold text-base">{item.title}</div>
                                                 <div className="text-sm">{item.coach} 教練</div>
+                                                <p className="text-sm text-zinc-200">
+                                                    {dayjs(item.date instanceof Timestamp ? item.date.toDate() : item.date).format("YYYY/MM/DD")}
+                                                </p>
                                                 <div className="text-sm">{item.startTime} - {item.endTime}</div>
+
                                             </div>
 
                                             <div

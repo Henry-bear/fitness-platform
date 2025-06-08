@@ -33,10 +33,13 @@ export default function TrainingRadarChart({ user, refreshTrigger }: Props) {
     });
     const allParts = useMemo(() => ["胸部", "背部", "腿部", "肩部", "腹部", "手臂"], []);
 
-    // ✅ 最初版的 Tooltip：只顯示訓練次數與前三筆記錄
+    // Tooltip：只顯示訓練次數與前三筆記錄
     const CustomRadarTooltip = ({ active, payload }: TooltipProps<string, string>) => {
         if (active && payload?.length) {
             const { part, count, details } = payload[0].payload;
+            if (count <= 0.1 && (!details || details.length === 0)) {
+                return null;
+            }
             return (
                 <div className="bg-zinc-900 border border-orange-500 rounded px-3 py-2 text-sm text-white shadow-lg w-64">
                     <div className="font-semibold text-orange-400 mb-1">{part}</div>
@@ -88,11 +91,24 @@ export default function TrainingRadarChart({ user, refreshTrigger }: Props) {
                 }
             });
 
-            const formatted = allParts.map((part) => ({
+            let formatted = allParts.map((part) => ({
                 part,
                 count: counter[part] || 0,
                 details: detail[part] || []
             }));
+            // 若只有一個部位有訓練 補 3 個虛擬部位讓圖形成面
+            const countOverZero = formatted.filter((d) => d.count > 0);
+            if (countOverZero.length < 3) {
+                const additionalParts = allParts
+                    .filter((p) => !countOverZero.map(d => d.part).includes(p))
+                    .slice(0, 3 - countOverZero.length); // 補足到 3 個點
+
+                formatted = formatted.map((d) =>
+                    additionalParts.includes(d.part)
+                        ? { ...d, count: 0.1 } // 補 0.1
+                        : d
+                );
+            }
             setData(formatted);
         };
 
@@ -176,13 +192,15 @@ export default function TrainingRadarChart({ user, refreshTrigger }: Props) {
                 <RadarChart cx="50%" cy="50%" outerRadius="80%" data={data}>
                     <PolarGrid stroke="#f97316" />
                     <PolarAngleAxis dataKey="part" stroke="#f97316" tick={renderAngleTick} />
-                    <PolarRadiusAxis axisLine={false} domain={[0, "auto"]} tick={renderRadiusTick} />
+                    <PolarRadiusAxis axisLine={false} domain={[0, 8]} tick={renderRadiusTick} />
                     <Radar
                         name="訓練次數"
                         dataKey="count"
                         stroke="#fb923c"
                         fill="#fdba74"
-                        fillOpacity={0.7}
+                        fillOpacity={0.9}
+                        strokeWidth={2}
+                        dot // 顯示節點
                     />
                     <Tooltip content={<CustomRadarTooltip />} />
                 </RadarChart>

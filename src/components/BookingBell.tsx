@@ -14,6 +14,8 @@ import {
 import { CalendarCheck } from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
+import { Timestamp } from "firebase/firestore";
+import dayjs from "dayjs";
 
 type Props = {
     user: User;
@@ -24,7 +26,7 @@ type GroupClass = {
     id: string;
     title: string;
     coach: string;
-    date: string;
+    date: Timestamp | Date;
     startTime: string;
     endTime: string;
 };
@@ -137,7 +139,8 @@ export default function BookingBell({ user }: Props) {
                                                 <div className="font-semibold text-orange-600">{item.title}</div>
                                                 <div className="text-sm text-zinc-700">{item.coach} 教練</div>
                                                 <div className="text-sm text-zinc-500">
-                                                    {item.date} | {item.startTime} - {item.endTime}
+                                                    {dayjs(item.date instanceof Timestamp ? item.date.toDate() : item.date).format("YYYY/MM/DD")}
+                                                    {" "} | {item.startTime} - {item.endTime}
                                                 </div>
                                                 <button
                                                     onClick={() => handleCancel(item.id)}

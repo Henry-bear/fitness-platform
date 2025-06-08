@@ -5,16 +5,17 @@ import { useAuthState } from "react-firebase-hooks/auth";
 import { auth, db } from "@/lib/firebase";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { query, where, collection, getDocs, deleteDoc, doc } from "firebase/firestore";
+import { query, where, collection, getDocs, deleteDoc, doc, Timestamp } from "firebase/firestore";
 import NewGroupClassModal from "@/components/NewGroupClassModal";
 import { toast } from "sonner";
 import ConfirmDialog from "@/components/ConfirmDialog";
+import dayjs from "dayjs";
 
 type GroupClass = {
     id: string;
     title: string;
     coach: string;
-    date: string;
+    date: Timestamp | Date;
     startTime: string;
     endTime: string;
     bookingCount: number;
@@ -31,7 +32,8 @@ export default function ScheduleAdminPage() {
     const [selectedId, setSelectedId] = useState<string | null>(null);
     const [, setBookingCount] = useState<number>(0);
     const [confirmMessage, setConfirmMessage] = useState<string>("你確定要刪除這堂課嗎？");
-
+    const [expiredClasses, setExpiredClasses] = useState<GroupClass[]>([]);
+    const [showExpireDialog, setShowExpireDialog] = useState(false);
 
     const fetchSchedule = async () => {
         const snapshot = await getDocs(collection(db, "groupSchedule"));
@@ -56,7 +58,45 @@ export default function ScheduleAdminPage() {
             })
         );
         setScheduleList(scheduleWithCounts);
+
+        const today = dayjs().startOf("day");
+        const expired = scheduleWithCounts.filter((item) =>
+            dayjs(item.date instanceof Timestamp ? item.date.toDate() : item.date).isBefore(today)
+        );
+        setExpiredClasses(expired);
+
+        if (expired.length > 0) {
+            setShowExpireDialog(true);
+        }
     };
+
+    // 刪除過期課程函式
+    const handleDeleteExpiredClasses = async () => {
+        try {
+            for (const expiredClass of expiredClasses) {
+                // 刪除 groupBookings
+                const bookingQuery = query(
+                    collection(db, "groupBookings"),
+                    where("groupClassId", "==", expiredClass.id)
+                );
+                const bookings = await getDocs(bookingQuery);
+                const deletePromises = bookings.docs.map((docSnap) =>
+                    deleteDoc(doc(db, "groupBookings", docSnap.id))
+                );
+                await Promise.all(deletePromises);
+
+                // 刪除 groupSchedule
+                await deleteDoc(doc(db, "groupSchedule", expiredClass.id));
+            }
+
+            toast.success("已刪除所有過期課程");
+            setShowExpireDialog(false);
+            fetchSchedule(); // 重新讀取課程
+        } catch (error) {
+            console.error("刪除過期課程失敗", error);
+            toast.error("刪除失敗，請稍後再試");
+        }
+    }
 
     const handleConfirmDelete = async () => {
         if (!selectedId) return;
@@ -138,7 +178,9 @@ export default function ScheduleAdminPage() {
                             <tr key={item.id} className="border-t border-zinc-200 hover:bg-zinc-50">
                                 <td className="text-zinc-800 p-2 font-medium">{item.title}</td>
                                 <td className="text-zinc-800 p-2">{item.coach}</td>
-                                <td className="text-zinc-800 p-2">{item.date}</td>
+                                <td className="text-zinc-800 p-2">
+                                    {dayjs(item.date instanceof Timestamp ? item.date.toDate() : item.date).format("YYYY/MM/DD")}
+                                </td>
                                 <td className="text-zinc-800 p-2">
                                     {item.startTime} - {item.endTime}
                                 </td>
@@ -187,6 +229,15 @@ export default function ScheduleAdminPage() {
                 }}
                 onConfirm={handleConfirmDelete}
             />
+
+            <ConfirmDialog
+                open={showExpireDialog}
+                title="刪除過期課程"
+                message={`共有 ${expiredClasses.length} 筆已過期課程，是否要一併刪除？`}
+                onCancel={() => setShowExpireDialog(false)}
+                onConfirm={handleDeleteExpiredClasses}
+            />
+
         </>
     );
 }

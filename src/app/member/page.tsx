@@ -15,6 +15,7 @@ import LatestBodyMetric from "@/components/LatestBodyMetric";
 import { useCustomClaimRole } from "../hooks/useCustomClaimRole";
 import BookingBell from "@/components/BookingBell";
 
+
 const motivationalQuotes = [
     "堅持不懈，會讓你看到意想不到的成長。",
     "今天的努力，是明天的進步。",

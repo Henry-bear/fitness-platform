@@ -7,6 +7,7 @@ import { auth } from "@/lib/firebase";
 import { toast } from "sonner";
 import MobileMenu from "./MobileMenu";
 import { Menu } from "lucide-react";
+import RecordSelectorModal from "./RecordSelectorModal";
 
 
 type Props = {
@@ -40,6 +41,7 @@ export default function Navbar({
     const router = useRouter();
     const [isVisible, setIsVisible] = useState(false);
     const [animationClass, setAnimationClass] = useState("");
+    const [showRecordSelector, setShowRecordSelector] = useState(false);
 
     const toggleMenu = () => {
         if (menuOpen) {
@@ -84,25 +86,34 @@ export default function Navbar({
                         ) : user ? (
                             <>
                                 <Link
+                                    href="/experience"
+                                    className="px-4 py-2 bg-yellow-400 text-black rounded hover:bg-yellow-500 transition font-bold"
+
+                                >
+                                    體驗教練課程
+                                </Link>
+
+                                <Link
                                     href="/group-classes"
                                     className="px-4 py-2 bg-orange-400 text-white rounded hover:bg-orange-500 transition"
                                 >
                                     團體課程
                                 </Link>
-
+                                {showRecordSelector && (
+                                    <RecordSelectorModal
+                                        onClose={() => setShowRecordSelector(false)}
+                                        onSelectWorkout={onAddWorkout}
+                                        onSelectMetric={onAddMetric}
+                                    />
+                                )}
 
                                 <button
-                                    onClick={onAddWorkout}
+                                    onClick={() => setShowRecordSelector(true)}
                                     className="px-4 py-2 bg-orange-500 text-white rounded hover:bg-orange-600 cursor-pointer"
                                 >
-                                    訓練記錄
+                                    記錄＋
                                 </button>
-                                <button
-                                    onClick={onAddMetric}
-                                    className="px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600 cursor-pointer"
-                                >
-                                    數值記錄
-                                </button>
+
                                 <Link
                                     href="/member"
                                     className="text-white font-medium hover:underline"

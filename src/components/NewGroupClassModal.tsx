@@ -5,6 +5,7 @@ import { addDoc, collection, Timestamp, getDocs, query, where } from "firebase/f
 import { db } from "@/lib/firebase";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
+import dayjs from "dayjs";
 
 export default function NewGroupClassModal({ isOpen, onClose, onSuccess }: { isOpen: boolean; onClose: () => void; onSuccess: () => void; }) {
     const [title, setTitle] = useState("");
@@ -12,6 +13,8 @@ export default function NewGroupClassModal({ isOpen, onClose, onSuccess }: { isO
     const [date, setDate] = useState("");
     const [startTime, setStartTime] = useState("");
     const [endTime, setEndTime] = useState("");
+    const [repeatWeekly, setRepeatWeekly] = useState(false);
+    const [repeatCount, setRepeatCount] = useState(4); // 預設重複 4 週
     const [loading, setLoading] = useState(false);
 
     const courseOptions = ["Zumba", "Yoga", "有氧拳擊", "飛輪", "核心訓練"];
@@ -49,14 +52,41 @@ export default function NewGroupClassModal({ isOpen, onClose, onSuccess }: { isO
 
         setLoading(true);
         try {
-            await addDoc(collection(db, "groupSchedule"), {
-                title,
-                coach,
-                date,
-                startTime,
-                endTime,
-                createdAt: Timestamp.now(),
-            });
+            const baseDate = dayjs(date);
+            const batchCount = repeatWeekly ? repeatCount : 1;
+
+            for (let i = 0; i < batchCount; i++) {
+                const targetDate = baseDate.add(i, "week").toDate();
+                const startOfDay = dayjs(targetDate).startOf("day").toDate();
+                const endOfDay = dayjs(targetDate).endOf("day").toDate();
+
+                // 防呆查詢
+                const duplicateQuery = query(
+                    collection(db, "groupSchedule"),
+                    where("coach", "==", coach),
+                    where("date", ">=", Timestamp.fromDate(startOfDay)),
+                    where("date", "<=", Timestamp.fromDate(endOfDay)),
+                    where("startTime", "==", startTime)
+                );
+                const duplicateSnapshot = await getDocs(duplicateQuery);
+
+                if (!duplicateSnapshot.empty) {
+                    toast.error("已有相同教練、時間的課程，請檢查。");
+                    setLoading(false);
+                    return;
+                }
+
+                await addDoc(collection(db, "groupSchedule"), {
+                    title,
+                    coach,
+                    date: targetDate,
+                    startTime,
+                    endTime,
+                    createdAt: Timestamp.now(),
+                });
+            }
+
+
             onSuccess();
             onClose();
             setTitle("");
@@ -64,6 +94,8 @@ export default function NewGroupClassModal({ isOpen, onClose, onSuccess }: { isO
             setDate("");
             setStartTime("");
             setEndTime("");
+            setRepeatWeekly(false);
+            setRepeatCount(4);
             toast.success("新增課程成功！");
         } catch (err) {
             toast.error("儲存失敗，請再試一次");
@@ -121,6 +153,26 @@ export default function NewGroupClassModal({ isOpen, onClose, onSuccess }: { isO
                             className="w-full border p-2 rounded"
                             min={new Date().toISOString().split("T")[0]}
                         />
+
+                        <div className="flex items-center gap-2 mt-2">
+                            <input
+                                type="checkbox"
+                                checked={repeatWeekly}
+                                onChange={(e) => setRepeatWeekly(e.target.checked)}
+                            />
+                            <label>每週重複</label>
+                            {repeatWeekly && (
+                                <input
+                                    type="number"
+                                    min={1}
+                                    max={12}
+                                    value={repeatCount}
+                                    onChange={(e) => setRepeatCount(Number(e.target.value))}
+                                    className="w-20 border p-1 rounded ml-2"
+                                    placeholder="週數"
+                                />
+                            )}
+                        </div>
 
                         <div className="flex gap-2">
                             <select
