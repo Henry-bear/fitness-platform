@@ -3,11 +3,13 @@ import { useEffect, useState } from "react";
 import { db } from "@/lib/firebase";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { User } from "firebase/auth";
+import dayjs from "dayjs";
+import { Timestamp } from "firebase/firestore";
 
 type GroupClass = {
     id: string;
     title: string;
-    date: string;
+    date: string | Timestamp;
     startTime: string;
     endTime: string;
 }
@@ -56,7 +58,7 @@ export default function CoachSchedule({ user }: { user: User }) {
                 >
                     <div className="font-bold text-orange-500">{cls.title}</div>
                     <div className="text-sm">
-                        {cls.date} / {cls.startTime} - {cls.endTime}
+                        {dayjs(cls.date instanceof Timestamp ? cls.date.toDate() : cls.date).format("YYYY-MM-DD")} / {cls.startTime} - {cls.endTime}
                     </div>
                     <div className="text-sm text-gray-700">
                         預約人數：{cls.bookingCount} 人

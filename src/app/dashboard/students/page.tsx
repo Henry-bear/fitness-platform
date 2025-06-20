@@ -11,6 +11,7 @@ type Student = {
     id: string;
     name: string;
     email: string;
+    remainingSessions: number;
 };
 
 export default function StudentsPage() {
@@ -27,18 +28,21 @@ export default function StudentsPage() {
         }
     }, [user, loading, role, roleLoading, router]);
 
+
     useEffect(() => {
         const fetchStudents = async () => {
             if (!user) return;
             const q = query(
                 collection(db, "users"),
-                where("assignedTrainerId", "==", user.uid)
+                where("assignedTrainerId", "==", user.uid),
+                where("isFormalMember", "==", true)
             );
             const snap = await getDocs(q);
             const result: Student[] = snap.docs.map((doc) => ({
                 id: doc.id,
                 name: doc.data().name || "(無名)",
                 email: doc.data().email || "",
+                remainingSessions: doc.data().remainingSessions || 0,
             }));
             setStudents(result);
         };
@@ -60,6 +64,9 @@ export default function StudentsPage() {
                             <li key={s.id} className="border-b py-2">
                                 <div className="font-semibold">{s.name}</div>
                                 <div className="text-sm text-gray-600">{s.email}</div>
+                                <div className="text-sm text-blue-600 font-medium">
+                                    剩餘堂數：{s.remainingSessions} 堂
+                                </div>
                             </li>
                         ))}
                     </ul>

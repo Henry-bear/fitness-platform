@@ -77,3 +77,25 @@
 .rbc-timeslot-group {
     border-color: #e2e8f0 !important;
 }
+
+/* 自定義課表事件樣式 */
+.event-normal {
+    background-color: #F97316 !important;
+    color: white;
+    border-radius: 4px;
+    border: none;
+}
+
+.event-experience {
+    background-color: #3B82F6 !important;
+    color: white;
+    border-radius: 4px;
+    border: none;
+}
+
+.rbc-event.attended {
+    background-color: #02C874 !important;
+    /* 淺黃色（cornsilk） */
+    color: #000;
+    font-weight: bold;
+}

@@ -68,8 +68,10 @@ export default function TrainingRadarChart({ user, refreshTrigger }: Props) {
 
             snapshot.forEach((doc) => {
                 const workout = doc.data();
-                if (workout.date &&
-                    dayjs(workout.date).format("YYYY-MM") === selectedMonth) {
+                if (
+                    workout.date &&
+                    dayjs(workout.date).format("YYYY-MM") === selectedMonth
+                ) {
                     const date = workout.date;
                     const exercises = workout.exercises || [];
                     const grouped: Record<string, string[]> = {};
@@ -91,24 +93,15 @@ export default function TrainingRadarChart({ user, refreshTrigger }: Props) {
                 }
             });
 
-            let formatted = allParts.map((part) => ({
-                part,
-                count: counter[part] || 0,
-                details: detail[part] || []
-            }));
-            // 若只有一個部位有訓練 補 3 個虛擬部位讓圖形成面
-            const countOverZero = formatted.filter((d) => d.count > 0);
-            if (countOverZero.length < 3) {
-                const additionalParts = allParts
-                    .filter((p) => !countOverZero.map(d => d.part).includes(p))
-                    .slice(0, 3 - countOverZero.length); // 補足到 3 個點
+            const formatted: TooltipData[] = allParts.map((part) => {
+                const count = counter[part];
+                return {
+                    part,
+                    count: typeof count === "number" && isFinite(count) && count > 0 ? count : 0.1,
+                    details: detail[part] || [],
+                };
+            });
 
-                formatted = formatted.map((d) =>
-                    additionalParts.includes(d.part)
-                        ? { ...d, count: 0.1 } // 補 0.1
-                        : d
-                );
-            }
             setData(formatted);
         };
 
@@ -171,6 +164,20 @@ export default function TrainingRadarChart({ user, refreshTrigger }: Props) {
         );
     };
 
+    const chartData = allParts.map((part) => {
+        const matched = data.find((d) => d.part === part);
+        return {
+            part,
+            count:
+                matched && typeof matched.count === "number" && isFinite(matched.count)
+                    ? matched.count
+                    : 0.1,
+            details: matched?.details || [],
+        };
+    });
+
+    const shouldRenderRadar = chartData.filter((d) => d.count > 0.1).length >= 3;
+
     return (
         <div className="mt-10 max-w-3xl mx-auto">
             <h3 className="text-lg font-bold text-orange-400 mb-2 text-center">訓練部位分布</h3>
@@ -187,27 +194,33 @@ export default function TrainingRadarChart({ user, refreshTrigger }: Props) {
                     ))}
                 </select>
             </div>
-
             <ResponsiveContainer width="100%" height={360}>
-                <RadarChart cx="50%" cy="50%" outerRadius="80%" data={data}>
+                <RadarChart cx="50%" cy="50%" outerRadius="80%" data={chartData}>
                     <PolarGrid stroke="#f97316" />
                     <PolarAngleAxis dataKey="part" stroke="#f97316" tick={renderAngleTick} />
                     <PolarRadiusAxis axisLine={false} domain={[0, 8]} tick={renderRadiusTick} />
+
                     <Radar
                         name="訓練次數"
                         dataKey="count"
                         stroke="#fb923c"
                         fill="#fdba74"
-                        fillOpacity={0.9}
+                        fillOpacity={shouldRenderRadar ? 0.9 : 0} // 👈 只有資料夠才填色，否則透明
                         strokeWidth={2}
-                        dot // 顯示節點
+                        isAnimationActive={false}
+                        dot
+                        legendType="circle"
                     />
+
                     <Tooltip content={<CustomRadarTooltip />} />
                 </RadarChart>
             </ResponsiveContainer>
-
-            <div className="min-h-[2rem] text-center mt-4 text-sm">
-                {!hasData && <p className="text-zinc-400">此月份尚未有訓練紀錄</p>}
+            <div className="min-h-[2rem] text-center mt-4 text-sm text-zinc-400">
+                {!hasData ? (
+                    <p>此月份尚未有訓練紀錄</p>
+                ) : !shouldRenderRadar ? (
+                    <p>訓練資料不足，無法產生完整圖形。</p>
+                ) : null}
             </div>
         </div>
     );

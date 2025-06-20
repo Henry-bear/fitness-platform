@@ -1,4 +1,5 @@
 "use client";
+
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import styles from "./MobileMenu.module.css";
@@ -22,7 +23,7 @@ type MenuItem = {
     onClick?: () => void;
     link?: string;
     delay: number;
-    variant?: "solid" | "outline" | "yellow" | "orange";
+    variant?: "solid" | "outline" | "yellow" | "orange" | "indigo";
 };
 
 export default function MobileMenu({
@@ -57,9 +58,10 @@ export default function MobileMenu({
         ? [
             { label: "體驗教練課程", link: "/experience", delay: 0, variant: "yellow" },
             { label: "團體課程", link: "/group-classes", delay: 100, variant: "orange" },
-            { label: "記錄+", onClick: () => setShowRecordModal(true), delay: 200 },
-            { label: user.displayName || "訪客", link: "/member", delay: 300 },
-            { label: "登出", onClick: onLogout, delay: 400 },
+            { label: "TDEE計算", link: "/tdee", delay: 200, variant: "indigo" },
+            { label: "記錄+", onClick: () => setShowRecordModal(true), delay: 300 },
+            { label: user.displayName || "訪客", link: "/member", delay: 400 },
+            { label: "登出", onClick: onLogout, delay: 500 },
         ]
         : [
             { label: "登入", onClick: onLogin, delay: 0, variant: "outline" },
@@ -85,14 +87,17 @@ export default function MobileMenu({
                             const isYellow = item.variant === "yellow";
                             const isOutline = item.variant === "outline";
                             const isOrange = item.variant === "orange";
+                            const isIndigo = item.variant === "indigo";
 
                             const buttonClass = `${animationClass} w-full max-w-[200px] px-4 py-2 rounded text-sm font-medium ${isYellow
-                                ? "bg-yellow-400 text-black font-bold hover:bg-yellow-500"
-                                : isOutline
-                                    ? "border border-orange-400 text-orange-400 bg-transparent hover:bg-orange-500 hover:text-white"
-                                    : isOrange
-                                        ? "bg-orange-400 text-white hover:bg-orange-500"
-                                        : "bg-orange-500 text-white hover:bg-orange-600"
+                                    ? "bg-yellow-400 text-black font-bold hover:bg-yellow-500"
+                                    : isOutline
+                                        ? "border border-orange-400 text-orange-400 bg-transparent hover:bg-orange-500 hover:text-white"
+                                        : isOrange
+                                            ? "bg-orange-400 text-white hover:bg-orange-500"
+                                            : isIndigo
+                                                ? "bg-indigo-600 text-white hover:bg-indigo-700"
+                                                : "bg-orange-500 text-white hover:bg-orange-600"
                                 }`;
 
                             return item.link ? (
@@ -110,7 +115,9 @@ export default function MobileMenu({
                                                     ? "border border-orange-400 text-orange-400 bg-transparent hover:bg-orange-500 hover:text-white"
                                                     : isOrange
                                                         ? "bg-orange-400 text-white hover:bg-orange-500"
-                                                        : "bg-orange-500 text-white hover:bg-orange-600"
+                                                        : isIndigo
+                                                            ? "bg-indigo-600 text-white hover:bg-indigo-700"
+                                                            : "bg-orange-500 text-white hover:bg-orange-600"
                                             }`
                                     }
                                 >

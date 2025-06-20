@@ -40,6 +40,8 @@ export default function RegisterForm({ onSuccess }: { onSuccess?: () => void }) 
                 name,
                 email,
                 role: "member",
+                isFormalMember: false, // 體驗會員
+                remainingSessions: 0,  // 初始堂數為 0
                 createdAt: serverTimestamp(),
             });
 

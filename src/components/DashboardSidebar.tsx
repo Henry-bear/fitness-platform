@@ -10,13 +10,15 @@ const navItems = {
     admin: [
         { name: "會員權限管理", path: "/dashboard/users" },
         { name: "團體課程管理", path: "/dashboard/schedule" },
+        { name: "體驗預約名單", path: "/dashboard/admin/experience" },
     ],
     groupCoach: [{
         name: "團課管理", path: "/dashboard/coaches"
     }],
     personalTrainer: [
-        { name: "我的教練課表", path: "/dashboard/trainer" },
-        { name: "我的學員資料", path: "/dashboard/students" },
+        { name: "我的課表", path: "/dashboard/trainer" },
+        { name: "學員名單", path: "/dashboard/students" },
+        { name: "體驗預約名單", path: "/dashboard/trainer/experience" },
     ],
 };
 

@@ -9,6 +9,7 @@ import {
     query,
     where,
     doc,
+    getDoc,
     deleteDoc,
 } from "firebase/firestore";
 import { CalendarCheck } from "lucide-react";
@@ -21,7 +22,6 @@ type Props = {
     user: User;
 };
 
-
 type GroupClass = {
     id: string;
     title: string;
@@ -31,13 +31,91 @@ type GroupClass = {
     endTime: string;
 };
 
+type PrivateSession = {
+    id: string;
+    trainerId: string;
+    studentId: string;
+    studentType: "experience" | "normal";
+    trainerName: string;
+    date: string; // "2025-06-20"
+    startTime: string; // "10:00"
+    endTime: string; // "11:00"
+    isAttended: boolean;
+};
+
 export default function BookingBell({ user }: Props) {
     const [showModal, setShowModal] = useState(false);
-    const [bookings, setBookings] = useState<(GroupClass & { isRemoving?: boolean })[]>([]);
+    const [bookings, setBookings] = useState<
+        (GroupClass & { isRemoving?: boolean })[]
+    >([]);
     const [bounceOnce, setBounceOnce] = useState(true);
-    // 載入預約
+    const [remainingSessions, setRemainingSessions] = useState<number | null>(
+        null
+    );
+    const [privateBookings, setPrivateBookings] = useState<PrivateSession[]>([]);
+
     useEffect(() => {
         if (!user) return;
+
+        // 抓取私人教練課預約日期
+        const fetchPrivateBookings = async () => {
+            const now = dayjs();
+
+            try {
+                const snap = await getDocs(
+                    query(
+                        collection(db, "privateSchedule"),
+                        where("studentId", "==", user.uid),
+                        where("isAttended", "==", false)
+                    )
+                );
+
+                const filtered = await Promise.all(
+                    snap.docs
+                        .map(async (docSnap): Promise<PrivateSession | null> => {
+                            const data = docSnap.data();
+                            const sessionDateTime = dayjs(`${data.date} ${data.endTime}`);
+                            if (!sessionDateTime.isAfter(now)) return null;
+
+                            const trainerDoc = await getDoc(doc(db, "users", data.trainerId));
+                            const trainerName = trainerDoc.exists()
+                                ? trainerDoc.data().name ?? "未知教練"
+                                : "未知教練";
+
+                            return {
+                                id: docSnap.id,
+                                trainerId: data.trainerId,
+                                trainerName,
+                                studentId: data.studentId,
+                                studentType: data.studentType,
+                                date: data.date,
+                                startTime: data.startTime,
+                                endTime: data.endTime,
+                                isAttended: data.isAttended,
+                            };
+                        })
+                );
+
+                // 移除 null 項目（已過期的）
+                setPrivateBookings(filtered.filter((item): item is PrivateSession => item !== null));
+            } catch (error) {
+                console.error("載入私人教練課失敗", error);
+            }
+        };
+
+        // 抓取私人教練課堂數
+        const fetchUserSessions = async () => {
+            try {
+                const userDoc = await getDoc(doc(db, "users", user.uid));
+                if (userDoc.exists()) {
+                    const data = userDoc.data();
+                    setRemainingSessions(data.remainingSessions ?? 0);
+                }
+            } catch (error) {
+                console.error("載入堂數失敗", error);
+            }
+        };
+
         const fetchBookings = async () => {
             const bookingSnap = await getDocs(
                 query(collection(db, "groupBookings"), where("userId", "==", user.uid))
@@ -53,6 +131,9 @@ export default function BookingBell({ user }: Props) {
             const filtered = classList.filter((item) => classIds.includes(item.id));
             setBookings(filtered);
         };
+
+        fetchPrivateBookings();
+        fetchUserSessions();
         fetchBookings();
     }, [user]);
 
@@ -90,10 +171,11 @@ export default function BookingBell({ user }: Props) {
             >
                 <button
                     onClick={() => setShowModal(true)}
-                    className={"bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-full shadow-lg flex items-center gap-2"}
+                    className={
+                        "bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-full shadow-lg flex items-center gap-2"
+                    }
                 >
                     <CalendarCheck className="w-5 h-5" />
-                    {/* 只在桌機版顯示文字 */}
                     <span className="hidden sm:inline">我的預約課程</span>
                 </button>
             </motion.div>
@@ -114,7 +196,9 @@ export default function BookingBell({ user }: Props) {
                             transition={{ duration: 0.3 }}
                         >
                             <div className="flex justify-between items-center mb-4">
-                                <h2 className="text-lg font-bold text-orange-500">已預約課程</h2>
+                                <h2 className="text-lg font-bold text-orange-500">
+                                    已預約課程
+                                </h2>
                                 <button
                                     onClick={() => setShowModal(false)}
                                     className="text-zinc-500 hover:text-zinc-800"
@@ -122,37 +206,80 @@ export default function BookingBell({ user }: Props) {
                                     ✕
                                 </button>
                             </div>
-                            {bookings.length === 0 ? (
-                                <p className="text-zinc-500">目前沒有預約課程</p>
-                            ) : (
-                                <ul className="space-y-3">
-                                    <AnimatePresence>
-                                        {bookings.map((item) => (
-                                            <motion.li
+
+                            {/* 私人教練課程區塊 */}
+                            <div className="mb-6 border border-orange-300 rounded-lg p-4 bg-orange-50">
+                                <h3 className="text-md font-bold text-orange-600 mb-3">私人教練課程</h3>
+
+                                <div className="bg-white border border-orange-200 rounded p-3 mb-4 shadow-sm">
+                                    {remainingSessions !== null ? (
+                                        <p className="text-sm text-zinc-700">
+                                            您的教練課堂數：
+                                            <span className="text-orange-600 font-bold ml-1">{remainingSessions}</span> 堂
+                                        </p>
+                                    ) : (
+                                        <p className="text-sm text-zinc-400">無法取得堂數資料</p>
+                                    )}
+                                </div>
+
+                                {privateBookings.length > 0 ? (
+                                    <ul className="space-y-3">
+                                        {privateBookings.map((item) => (
+                                            <li
                                                 key={item.id}
-                                                initial={{ opacity: 1, height: "auto" }}
-                                                animate={{ opacity: 1, height: "auto" }}
-                                                exit={{ opacity: 0, height: 0 }}
-                                                transition={{ duration: 0.3 }}
-                                                className="border rounded p-3 shadow-sm overflow-hidden"
+                                                className="border border-orange-200 rounded p-3 bg-white shadow-sm"
                                             >
-                                                <div className="font-semibold text-orange-600">{item.title}</div>
-                                                <div className="text-sm text-zinc-700">{item.coach} 教練</div>
+                                                <div className="font-semibold text-orange-600">一對一課程</div>
+                                                <div className="text-sm text-zinc-700">教練：{item.trainerName}</div>
                                                 <div className="text-sm text-zinc-500">
-                                                    {dayjs(item.date instanceof Timestamp ? item.date.toDate() : item.date).format("YYYY/MM/DD")}
-                                                    {" "} | {item.startTime} - {item.endTime}
+                                                    {dayjs(item.date).format("YYYY/MM/DD")} | {item.startTime} - {item.endTime}
                                                 </div>
-                                                <button
-                                                    onClick={() => handleCancel(item.id)}
-                                                    className="mt-2 text-sm text-red-500 border border-red-300 px-2 py-1 rounded hover:bg-red-100 transition"
-                                                >
-                                                    取消預約
-                                                </button>
-                                            </motion.li>
+                                            </li>
                                         ))}
-                                    </AnimatePresence>
-                                </ul>
-                            )}
+                                    </ul>
+                                ) : (
+                                    <p className="text-sm text-zinc-500">目前沒有私人教練預約</p>
+                                )}
+                            </div>
+
+
+                            {/* 團體課程區塊 */}
+                            <div className="border border-orange-300 rounded-lg p-4 bg-orange-50">
+                                <h3 className="text-md font-bold text-orange-600 mb-3">團體課程</h3>
+                                {bookings.length === 0 ? (
+                                    <p className="text-sm text-zinc-500">目前沒有預約團體課程</p>
+                                ) : (
+                                    <ul className="space-y-3">
+                                        <AnimatePresence>
+                                            {bookings.map((item) => (
+                                                <motion.li
+                                                    key={item.id}
+                                                    initial={{ opacity: 1, height: "auto" }}
+                                                    animate={{ opacity: 1, height: "auto" }}
+                                                    exit={{ opacity: 0, height: 0 }}
+                                                    transition={{ duration: 0.3 }}
+                                                    className="border border-orange-200 rounded p-3 bg-white shadow-sm overflow-hidden"
+                                                >
+                                                    <div className="font-semibold text-orange-600">{item.title}</div>
+                                                    <div className="text-sm text-zinc-700">{item.coach} 教練</div>
+                                                    <div className="text-sm text-zinc-500">
+                                                        {dayjs(
+                                                            item.date instanceof Timestamp ? item.date.toDate() : item.date
+                                                        ).format("YYYY/MM/DD")}{" "}
+                                                        | {item.startTime} - {item.endTime}
+                                                    </div>
+                                                    <button
+                                                        onClick={() => handleCancel(item.id)}
+                                                        className="mt-2 text-sm text-red-500 border border-red-300 px-2 py-1 rounded hover:bg-red-100 transition"
+                                                    >
+                                                        取消預約
+                                                    </button>
+                                                </motion.li>
+                                            ))}
+                                        </AnimatePresence>
+                                    </ul>
+                                )}
+                            </div>
                         </motion.div>
                     </motion.div>
                 )}

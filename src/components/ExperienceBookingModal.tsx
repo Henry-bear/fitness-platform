@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { db } from "@/lib/firebase";
-import { addDoc, collection, Timestamp } from "firebase/firestore";
+import { addDoc, collection, Timestamp, getDocs, query, where, doc, getDoc } from "firebase/firestore";
 import { User } from "firebase/auth";
 import { toast } from "sonner";
 
@@ -18,12 +18,40 @@ export default function ExperienceBookingModal({ user, onClose }: Props) {
     const handleBooking = async () => {
         try {
             setLoading(true);
+
+            if (!preferredTime) {
+                toast.error("請選擇您偏好的體驗時間");
+                setLoading(false);
+                return;
+            }
+            // 檢查是否為正式會員
+            const userDoc = await getDoc(doc(db, "users", user.uid));
+            if (userDoc.exists() && userDoc.data().isFormalMember) {
+                toast.error("您已體驗過，建議您詢問所屬教練。");
+                setLoading(false);
+                return;
+            }
+
+            // 檢查是否已有未完成的預約
+            const existingQuery = query(
+                collection(db, "experienceBookings"),
+                where("userId", "==", user.uid),
+                where("status", "in", ["pending", "assigned"])
+            );
+            const existing = await getDocs(existingQuery);
+            if (!existing.empty) {
+                toast.error("您已預約過體驗課，請等待聯繫！");
+                setLoading(false);
+                return;
+            }
+
             await addDoc(collection(db, "experienceBookings"), {
                 userId: user.uid,
                 userName: user.displayName || "匿名使用者",
                 email: user.email || "",
                 preferredTime,
                 status: "pending",
+                assignedTrainerId: "",
                 createdAt: Timestamp.now(),
             });
             toast.success("預約成功，我們將盡快與您聯繫！");

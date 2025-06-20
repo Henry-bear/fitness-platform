@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "sonner";
+import Script from "next/script";
+
 
 
 const geistSans = Geist({
@@ -26,10 +28,18 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
+
       <body
         className={`min-h-screen bg-black text-white antialiased font-sans ${geistSans.variable} ${geistMono.variable}`}
       >
         {children}
+
+        {/* TapPay */}
+        <Script
+          src="https://js.tappaysdk.com/tpdirect/v5.1.0"
+          strategy="beforeInteractive"
+          async={false}
+        />
 
         <Toaster
           position="top-center"
@@ -43,6 +53,7 @@ export default function RootLayout({
             },
           }}
         />
+
       </body>
     </html>
   );

@@ -87,7 +87,7 @@ export default function Navbar({
                             <>
                                 <Link
                                     href="/experience"
-                                    className="px-4 py-2 bg-yellow-400 text-black rounded hover:bg-yellow-500 transition font-bold"
+                                    className="px-4 py-2 bg-yellow-400 text-black rounded hover:bg-yellow-500 transition font-bold cursor-pointer"
 
                                 >
                                     體驗教練課程
@@ -95,9 +95,15 @@ export default function Navbar({
 
                                 <Link
                                     href="/group-classes"
-                                    className="px-4 py-2 bg-orange-400 text-white rounded hover:bg-orange-500 transition"
+                                    className="px-4 py-2 bg-orange-400 text-white rounded hover:bg-orange-500 transition font-bold cursor-pointer"
                                 >
                                     團體課程
+                                </Link>
+                                <Link
+                                    href="/tdee"
+                                    className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 transition font-bold cursor-pointer"
+                                >
+                                    TDEE 計算
                                 </Link>
                                 {showRecordSelector && (
                                     <RecordSelectorModal
@@ -109,7 +115,7 @@ export default function Navbar({
 
                                 <button
                                     onClick={() => setShowRecordSelector(true)}
-                                    className="px-4 py-2 bg-orange-500 text-white rounded hover:bg-orange-600 cursor-pointer"
+                                    className="px-4 py-2 bg-orange-500 text-white rounded hover:bg-orange-600 cursor-pointer font-bold"
                                 >
                                     記錄＋
                                 </button>
