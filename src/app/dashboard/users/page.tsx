@@ -129,7 +129,7 @@ export default function AdminUsersPage() {
                         {users.map((u) => (
                             <tr
                                 key={u.id}
-                                className="border-t border-gray-200 hover:bg-orange-50 transition-colors"
+                                className="border-t border-gray-200 hover:bg-orange-50 transition-colors hidden sm:table-row"
                             >
                                 <td className="px-4 py-2">{u.name}</td>
                                 <td className="px-4 py-2">{u.email}</td>
@@ -162,6 +162,47 @@ export default function AdminUsersPage() {
                                                 </option>
                                             ))}
                                     </select>
+                                </td>
+                            </tr>
+                        ))}
+                        {/* 📱 手機版卡片 */}
+                        {users.map((u) => (
+                            <tr key={u.id} className="sm:hidden">
+                                <td colSpan={4} className="border-t border-gray-200 p-4">
+                                    <div className="space-y-2 text-sm">
+                                        <p><span className="font-bold text-orange-600">姓名：</span>{u.name}</p>
+                                        <p><span className="font-bold text-orange-600">Email：</span>{u.email}</p>
+                                        <div>
+                                            <p className="font-bold text-orange-600">目前角色：</p>
+                                            <select
+                                                value={u.role}
+                                                onChange={(e) => handleRoleChange(u.id, e.target.value as UserItem["role"])}
+                                                className="bg-white border border-orange-400 text-orange-600 rounded px-2 py-1 mt-1 w-full"
+                                            >
+                                                <option value="member">會員</option>
+                                                <option value="groupCoach">團課教練</option>
+                                                <option value="personalTrainer">私人教練</option>
+                                                <option value="admin" disabled>管理員</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <p className="font-bold text-orange-600">專屬教練：</p>
+                                            <select
+                                                value={u.assignedTrainerId || ""}
+                                                onChange={(e) => handleTrainerAssign(u.id, e.target.value)}
+                                                className="bg-white border border-orange-400 text-orange-600 rounded px-2 py-1 mt-1 w-full"
+                                            >
+                                                <option value="">尚未指定</option>
+                                                {users
+                                                    .filter((user) => user.role === "personalTrainer")
+                                                    .map((trainer) => (
+                                                        <option key={trainer.id} value={trainer.id}>
+                                                            {trainer.name}
+                                                        </option>
+                                                    ))}
+                                            </select>
+                                        </div>
+                                    </div>
                                 </td>
                             </tr>
                         ))}

@@ -12,9 +12,7 @@ const navItems = {
         { name: "團體課程管理", path: "/dashboard/schedule" },
         { name: "體驗預約名單", path: "/dashboard/admin/experience" },
     ],
-    groupCoach: [{
-        name: "團課管理", path: "/dashboard/coaches"
-    }],
+    groupCoach: [{ name: "團課管理", path: "/dashboard/coaches" }],
     personalTrainer: [
         { name: "我的課表", path: "/dashboard/trainer" },
         { name: "學員名單", path: "/dashboard/students" },
@@ -29,34 +27,39 @@ export default function DashboardSidebar() {
     const items = navItems[role as keyof typeof navItems] || [];
 
     return (
-        <aside className="w-60 h-screen bg-black px-4 py-6 text-white flex flex-col">
-            <h2 className="text-xl font-bold text-white mb-8">Fitnessway 管理系統</h2>
+        <aside className="bg-black text-white px-4 py-4 md:py-6 md:px-6
+                         flex flex-col md:w-60 md:h-screen md:fixed md:top-0 md:left-0">
+            {/* 標題 */}
+            <h2 className="text-xl md:text-lg font-bold text-white mb-6 text-center">
+                Fitnessway 管理系統
+            </h2>
 
-            <nav className="flex flex-col gap-2">
+            {/* 導覽列 */}
+            <nav className="flex flex-col gap-2 text-center">
                 {items.map((item) => {
                     const isActive = pathname === item.path;
                     return (
                         <Link
                             key={item.path}
                             href={item.path}
-                            className={`flex items-center gap-3 px-4 py-2 rounded-md transition-colors ${isActive
-                                ? "bg-orange-500 text-white"
-                                : "text-white hover:bg-zinc-800"
+                            className={`px-3 py-2 rounded-md transition-colors ${isActive
+                                    ? "bg-orange-500 text-white"
+                                    : "text-white hover:bg-orange-400"
                                 }`}
                         >
-                            <span>{item.name}</span>
+                            {item.name}
                         </Link>
                     );
                 })}
             </nav>
 
-            {/* 離開後台按鈕固定在最底部 */}
-            <div className="mt-auto pt-8">
+            {/* 回首頁按鈕 */}
+            <div className="mt-auto pt-8 text-center">
                 <Link
                     href="/"
-                    className="w-full flex justify-center items-center gap-2 bg-gray-400 text-white font-semibold rounded-md py-2 hover:bg-orange-600 transition"
+                    className="inline-block px-4 py-2 bg-gray-400 text-white font-semibold rounded-md hover:bg-orange-600 transition"
                 >
-                    <span>回到首頁</span>
+                    回首頁
                 </Link>
             </div>
         </aside>

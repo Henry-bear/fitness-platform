@@ -4,6 +4,9 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import styles from "./MobileMenu.module.css";
 import RecordSelectorModal from "./RecordSelectorModal";
+import { useCustomClaimRole } from "@/app/hooks/useCustomClaimRole";
+import { auth } from "@/lib/firebase";
+import { useAuthState } from "react-firebase-hooks/auth";
 
 type Props = {
     onAddWorkout?: () => void;
@@ -23,7 +26,7 @@ type MenuItem = {
     onClick?: () => void;
     link?: string;
     delay: number;
-    variant?: "solid" | "outline" | "yellow" | "orange" | "indigo";
+    variant?: "solid" | "outline" | "yellow" | "orange" | "indigo" | "dashboard";
 };
 
 export default function MobileMenu({
@@ -40,6 +43,8 @@ export default function MobileMenu({
     const [isVisible, setIsVisible] = useState(false);
     const [isLeaving, setIsLeaving] = useState(false);
     const [showRecordModal, setShowRecordModal] = useState(false);
+    const [firebaseUser] = useAuthState(auth);
+    const { role } = useCustomClaimRole(firebaseUser ?? null);
 
     useEffect(() => {
         if (menuOpen) {
@@ -54,19 +59,34 @@ export default function MobileMenu({
         }
     }, [menuOpen]);
 
-    const items: MenuItem[] = user
-        ? [
+    let items: MenuItem[] = [];
+
+    if (user) {
+        items = [
             { label: "體驗教練課程", link: "/experience", delay: 0, variant: "yellow" },
             { label: "團體課程", link: "/group-classes", delay: 100, variant: "orange" },
             { label: "TDEE計算", link: "/tdee", delay: 200, variant: "indigo" },
             { label: "記錄+", onClick: () => setShowRecordModal(true), delay: 300 },
             { label: user.displayName || "訪客", link: "/member", delay: 400 },
-            { label: "登出", onClick: onLogout, delay: 500 },
-        ]
-        : [
+        ];
+
+        // admin / groupCoach / personalTrainer 才加入後台選單
+        if (role === "admin" || role === "groupCoach" || role === "personalTrainer") {
+            items.push({
+                label: "後台管理",
+                link: "/dashboard",
+                delay: 500,
+                variant: "dashboard",
+            });
+        }
+
+        items.push({ label: "登出", onClick: onLogout, delay: 650 });
+    } else {
+        items = [
             { label: "登入", onClick: onLogin, delay: 0, variant: "outline" },
             { label: "註冊", onClick: onRegister, delay: 100, variant: "solid" },
         ];
+    }
 
     return (
         <>
@@ -88,15 +108,18 @@ export default function MobileMenu({
                             const isOutline = item.variant === "outline";
                             const isOrange = item.variant === "orange";
                             const isIndigo = item.variant === "indigo";
+                            const isDashboard = item.variant === "dashboard";
 
                             const buttonClass = `${animationClass} w-full max-w-[200px] px-4 py-2 rounded text-sm font-medium ${isYellow
-                                    ? "bg-yellow-400 text-black font-bold hover:bg-yellow-500"
-                                    : isOutline
-                                        ? "border border-orange-400 text-orange-400 bg-transparent hover:bg-orange-500 hover:text-white"
-                                        : isOrange
-                                            ? "bg-orange-400 text-white hover:bg-orange-500"
-                                            : isIndigo
-                                                ? "bg-indigo-600 text-white hover:bg-indigo-700"
+                                ? "bg-yellow-400 text-black font-bold hover:bg-yellow-500"
+                                : isOutline
+                                    ? "border border-orange-400 text-orange-400 bg-transparent hover:bg-orange-500 hover:text-white"
+                                    : isOrange
+                                        ? "bg-orange-400 text-white hover:bg-orange-500"
+                                        : isIndigo
+                                            ? "bg-indigo-600 text-white hover:bg-indigo-700"
+                                            : isDashboard
+                                                ? "bg-black text-orange-400 border border-orange-400 hover:bg-orange-500 hover:text-white transition"
                                                 : "bg-orange-500 text-white hover:bg-orange-600"
                                 }`;
 
@@ -117,9 +140,12 @@ export default function MobileMenu({
                                                         ? "bg-orange-400 text-white hover:bg-orange-500"
                                                         : isIndigo
                                                             ? "bg-indigo-600 text-white hover:bg-indigo-700"
-                                                            : "bg-orange-500 text-white hover:bg-orange-600"
+                                                            : isDashboard
+                                                                ? "bg-black text-orange-400 border border-orange-400 hover:bg-orange-500 hover:text-white transition"
+                                                                : "bg-orange-500 text-white hover:bg-orange-600"
                                             }`
                                     }
+
                                 >
                                     {item.label}
                                 </Link>

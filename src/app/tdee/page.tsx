@@ -6,12 +6,16 @@ import { useRouter } from "next/navigation";
 import { auth } from "@/lib/firebase";
 import { useCustomClaimRole } from "@/app/hooks/useCustomClaimRole";
 import Navbar from "@/components/Navbar";
+import WorkoutForm from "@/components/WorkoutForm";
+import BodyMetricModal from "@/components/BodyMetricModal";
 import TDEECalculator from "@/components/TDEECalculator";
 
 export default function TDEEPage() {
     const [user, setUser] = useState<User | null>(null);
     const [authLoading, setAuthLoading] = useState(true);
     const { role, loading: roleLoading } = useCustomClaimRole(user ?? null);
+    const [showWorkoutModal, setShowWorkoutModal] = useState(false);
+    const [showMetricModal, setShowMetricModal] = useState(false);
     const [menuOpen, setMenuOpen] = useState(false);
     const router = useRouter();
 
@@ -45,11 +49,18 @@ export default function TDEEPage() {
                 authLoading={authLoading}
                 role={role}
                 roleLoading={roleLoading}
-                onAddWorkout={() => { }}
-                onAddMetric={() => { }}
+                onAddWorkout={() => setShowWorkoutModal(true)}
+                onAddMetric={() => setShowMetricModal(true)}
                 menuOpen={menuOpen}
                 setMenuOpen={setMenuOpen}
             />
+            {showWorkoutModal && user && (
+                <WorkoutForm user={user} onClose={() => setShowWorkoutModal(false)} onSaved={() => { }} />
+            )}
+
+            {showMetricModal && user?.uid && (
+                <BodyMetricModal userId={user.uid} onClose={() => setShowMetricModal(false)} onSaved={() => { }} />
+            )}
 
             <main className="max-w-3xl mx-auto px-4 py-10">
                 <div className="bg-zinc-900 rounded-lg shadow-md p-6 text-white">
