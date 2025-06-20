@@ -47,6 +47,21 @@ export default function TrainerDashboardPage() {
     const [selectedEvent, setSelectedEvent] = useState<TrainerEvent | null>(null);
     const [showConfirmDialog, setShowConfirmDialog] = useState(false);
     const [showAttendanceDialog, setShowAttendanceDialog] = useState(false);
+    const [isMobile, setIsMobile] = useState(false);
+
+    // 判斷視窗大小 顯示 day or week
+    useEffect(() => {
+        if (typeof window !== "undefined") {
+            const handleResize = () => setIsMobile(window.innerWidth < 640);
+            handleResize(); // 初始檢查一次
+            window.addEventListener("resize", handleResize);
+            return () => window.removeEventListener("resize", handleResize);
+        }
+    }, []);
+
+    useEffect(() => {
+        setCurrentView(isMobile ? "day" : "week");
+    }, [isMobile]);
 
     // 權限檢查
     useEffect(() => {
@@ -336,7 +351,7 @@ export default function TrainerDashboardPage() {
         <div className="p-6">
             <h1 className="text-2xl font-bold text-orange-500 mb-4">我的教練課表</h1>
 
-            <div className="bg-white p-4 rounded shadow border border-orange-300">
+            <div className="bg-white p-4 rounded shadow border border-orange-300 overflow-x-auto">
                 <Calendar
                     key={events.length}
                     localizer={localizer}
@@ -376,13 +391,12 @@ export default function TrainerDashboardPage() {
                         setShowModal(true);
                     }}
                     onSelectEvent={(event) => {
-                        setSelectedEvent(event);
                         if (event.isAttended) {
                             toast.error("此課程已簽到，無法取消！");
                             return;
                         }
                         setShowAttendanceDialog(true);   // 未簽到 → 出現簽到選項
-
+                        setSelectedEvent(event);
                     }}
                     eventPropGetter={(event: TrainerEvent) => {
                         let className = "event-normal";
