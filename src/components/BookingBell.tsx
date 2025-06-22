@@ -43,6 +43,14 @@ type PrivateSession = {
     isAttended: boolean;
 };
 
+type ExperienceBooking = {
+    id: string;
+    preferredTime: string;
+    status: "pending" | "assigned" | "contacted";
+    assignedTrainerId?: string;
+    trainerName?: string;
+};
+
 export default function BookingBell({ user }: Props) {
     const [showModal, setShowModal] = useState(false);
     const [bookings, setBookings] = useState<
@@ -131,6 +139,7 @@ export default function BookingBell({ user }: Props) {
             const filtered = classList.filter((item) => classIds.includes(item.id));
             setBookings(filtered);
         };
+
 
         fetchPrivateBookings();
         fetchUserSessions();
@@ -228,7 +237,9 @@ export default function BookingBell({ user }: Props) {
                                                 key={item.id}
                                                 className="border border-orange-500 rounded p-3 bg-zinc-900 shadow-sm"
                                             >
-                                                <div className="font-semibold text-orange-400">一對一課程</div>
+                                                <div className="font-semibold text-orange-400">一對一課程
+                                                    {item.studentType === "experience" && <span className="ml-2 text-sm text-orange-300">(體驗)</span>}
+                                                </div>
                                                 <div className="text-sm text-zinc-300">教練：{item.trainerName}</div>
                                                 <div className="text-sm text-zinc-400">
                                                     {dayjs(item.date).format("YYYY/MM/DD")} | {item.startTime} - {item.endTime}
