@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "sonner";
 import Script from "next/script";
+import Footer from "@/components/Footer";
 
 
 
@@ -53,7 +54,7 @@ export default function RootLayout({
             },
           }}
         />
-
+        <Footer />
       </body>
     </html>
   );
