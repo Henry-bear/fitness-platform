@@ -67,8 +67,13 @@ export default function LatestBodyMetric({ userId, user, refreshTrigger }: Props
 
     const { height, weight, bodyFat } = latest;
     const bmi = weight / ((height / 100) ** 2);
-    const shapeType =
-        bodyFat >= 30 ? "overweight" : bodyFat < 15 ? "slim" : "normal";
+    function getShapeType(bmi: number, fat: number): "slim" | "normal" | "overweight" {
+        if (bmi < 18.5 || fat < 12) return "slim";             // 偏瘦或精壯
+        if (bmi >= 27 || fat >= 25) return "overweight";       // 過重或體脂偏高
+        return "normal";                                       // 介於中間者
+    }
+
+    const shapeType = getShapeType(bmi, bodyFat);
     const bmiLabel =
         bmi < 18.5 ? "過輕" : bmi < 24 ? "正常" : bmi < 27 ? "過重" : "肥胖";
     const fatLabel =
