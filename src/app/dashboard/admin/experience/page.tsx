@@ -120,46 +120,61 @@ export default function AdminExperienceBookingsPage() {
             ) : bookings.length === 0 ? (
                 <p className="text-gray-600">目前沒有待處理的預約。</p>
             ) : (
-                <table className="min-w-full text-sm text-gray-800 border border-gray-200 rounded-lg">
-                    <thead className="bg-orange-100 text-orange-600">
-                        <tr>
-                            <th className="px-4 py-2 text-left">姓名</th>
-                            <th className="px-4 py-2 text-left">Email</th>
-                            <th className="px-4 py-2 text-left">偏好時間</th>
-                            <th className="px-4 py-2 text-left">建立時間</th>
-                            <th className="px-4 py-2 text-left">指派教練</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {bookings.map((booking) => (
-                            <tr
-                                key={booking.id}
-                                className="border-t border-gray-200 hover:bg-orange-50 transition-colors"
-                            >
-                                <td className="px-4 py-2">{booking.userName}</td>
-                                <td className="px-4 py-2">{booking.email}</td>
-                                <td className="px-4 py-2">{booking.preferredTime}</td>
-                                <td className="px-4 py-2">
-                                    {booking.createdAt.toDate().toLocaleString()}
-                                </td>
-                                <td className="px-4 py-2">
-                                    <select
-                                        value={booking.assignedTrainerId || ""}
-                                        onChange={(e) => handleAssignTrainer(booking.id, booking.userId, e.target.value)}
-                                        className="bg-white border border-orange-400 text-orange-600 rounded px-2 py-1 focus:outline-orange-400"
-                                    >
-                                        <option value="">尚未指派</option>
-                                        {trainers.map((trainer) => (
-                                            <option key={trainer.id} value={trainer.id}>
-                                                {trainer.name}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </td>
+                <div className="overflow-x-auto">
+                    <table className="min-w-full text-sm text-gray-800 border border-gray-200 rounded-lg">
+                        <thead className="bg-orange-100 text-orange-600 hidden sm:table-header-group">
+                            <tr>
+                                <th className="px-4 py-2 text-left">姓名</th>
+                                <th className="px-4 py-2 text-left">Email</th>
+                                <th className="px-4 py-2 text-left">偏好時間</th>
+                                <th className="px-4 py-2 text-left">建立時間</th>
+                                <th className="px-4 py-2 text-left">指派教練</th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            {bookings.map((booking) => (
+                                <tr
+                                    key={booking.id}
+                                    className="border-t border-gray-200 hover:bg-orange-50 transition-colors block sm:table-row"
+                                >
+                                    <td className="px-4 py-2 sm:table-cell block">
+                                        <span className="font-bold sm:hidden">姓名：</span>
+                                        {booking.userName}
+                                    </td>
+                                    <td className="px-4 py-2 sm:table-cell block">
+                                        <span className="font-bold sm:hidden">Email：</span>
+                                        {booking.email}
+                                    </td>
+                                    <td className="px-4 py-2 sm:table-cell block">
+                                        <span className="font-bold sm:hidden">偏好時間：</span>
+                                        {booking.preferredTime}
+                                    </td>
+                                    <td className="px-4 py-2 sm:table-cell block">
+                                        <span className="font-bold sm:hidden">建立時間：</span>
+                                        {booking.createdAt.toDate().toLocaleString()}
+                                    </td>
+                                    <td className="px-4 py-2 sm:table-cell block">
+                                        <span className="font-bold sm:hidden">指派教練：</span>
+                                        <select
+                                            value={booking.assignedTrainerId || ""}
+                                            onChange={(e) =>
+                                                handleAssignTrainer(booking.id, booking.userId, e.target.value)
+                                            }
+                                            className="bg-white border border-orange-400 text-orange-600 rounded px-2 py-1 mt-1 w-full sm:w-auto"
+                                        >
+                                            <option value="">尚未指派</option>
+                                            {trainers.map((trainer) => (
+                                                <option key={trainer.id} value={trainer.id}>
+                                                    {trainer.name}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
             )}
         </div>
     );
