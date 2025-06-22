@@ -3,7 +3,12 @@
 import { useEffect, useState } from "react";
 import LoginForm from "./LoginForm";
 
-export default function LoginModal({ onClose }: { onClose: () => void }) {
+export default function LoginModal({
+    onClose,
+    openRegister, }: {
+        onClose: () => void;
+        openRegister: () => void;
+    }) {
     const [isVisible, setIsVisible] = useState(false);
 
     // 控制進場動畫
@@ -38,6 +43,20 @@ export default function LoginModal({ onClose }: { onClose: () => void }) {
 
                 {/* 傳入 onSuccess，登入成功後自動關閉 */}
                 <LoginForm />
+                <p className="text-sm text-center text-zinc-400 mt-4">
+                    還沒有帳號嗎？
+                    <button
+                        onClick={() => {
+                            handleClose(); // 關閉 LoginModal
+                            setTimeout(() => {
+                                openRegister();    // 再開啟註冊 Modal（延遲執行避免重疊動畫）
+                            }, 300);             // 與關閉動畫時間一致
+                        }}
+                        className="text-orange-500 hover:underline ml-1"
+                    >
+                        點此註冊
+                    </button>
+                </p>
             </div>
         </div>
     );

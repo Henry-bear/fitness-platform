@@ -41,11 +41,23 @@ export default function Home() {
     <>
       {/* 註冊 Modal */}
       {showRegister && (
-        <RegisterModal onClose={() => setShowRegister(false)} />
+        <RegisterModal
+          onClose={() => setShowRegister(false)}
+          openLogin={() => {
+            setShowRegister(false);   // 關閉註冊
+            setShowLogin(true);       // 開啟登入
+          }}
+        />
       )}
       {/* 登入 Modal */}
       {showLogin && (
-        <LoginModal onClose={() => setShowLogin(false)} />
+        <LoginModal
+          onClose={() => setShowLogin(false)}
+          openRegister={() => {
+            setShowLogin(false);       // 關閉登入
+            setShowRegister(true);     // 開啟註冊
+          }}
+        />
       )}
       {/* BodyMetricModal*/}
       {user && showMetricModal && (
