@@ -64,8 +64,24 @@ export default function MemberPage() {
     return (
         <>
             {/* 全頁 Modal */}
-            {showLogin && <LoginModal onClose={() => setShowLogin(false)} />}
-            {showRegister && <RegisterModal onClose={() => setShowRegister(false)} />}
+            {showLogin && (
+                <LoginModal
+                    onClose={() => setShowLogin(false)}
+                    openRegister={() => {
+                        setShowLogin(false);      // 先關閉登入
+                        setShowRegister(true);    // 再開啟註冊
+                    }}
+                />
+            )}
+            {showRegister && (
+                <RegisterModal
+                    onClose={() => setShowRegister(false)}
+                    openLogin={() => {
+                        setShowRegister(false);     // 先關閉註冊
+                        setShowLogin(true);         // 再開啟登入
+                    }}
+                />
+            )}
             {showWorkoutModal && user && (
                 <WorkoutForm user={user} onClose={() => setShowWorkoutModal(false)} onSaved={handleRefresh} />
             )}
