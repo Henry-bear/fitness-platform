@@ -33,7 +33,7 @@ export default function BookingModal({ open, onClose, onConfirm, students, slotI
 
     return (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-            <div className="bg-white p-6 rounded shadow-md w-[90%] max-w-md">
+            <div className="bg-white p-4 sm:p-6 rounded shadow-md w-[90vw] max-w-md mx-auto">
                 <h2 className="text-xl font-bold text-orange-500 mb-4">
                     建立預約
                 </h2>

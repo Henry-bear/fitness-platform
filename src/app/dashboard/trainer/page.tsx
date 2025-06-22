@@ -365,6 +365,7 @@ export default function TrainerDashboardPage() {
                     views={["week", "day"]}
                     style={{ height: 600 }}
                     toolbar={true}
+                    popup={true}
                     min={new Date(1970, 0, 1, 8, 0)}
                     max={new Date(1970, 0, 1, 23, 0)}
                     messages={{
