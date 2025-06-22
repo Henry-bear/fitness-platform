@@ -43,13 +43,6 @@ type PrivateSession = {
     isAttended: boolean;
 };
 
-type ExperienceBooking = {
-    id: string;
-    preferredTime: string;
-    status: "pending" | "assigned" | "contacted";
-    assignedTrainerId?: string;
-    trainerName?: string;
-};
 
 export default function BookingBell({ user }: Props) {
     const [showModal, setShowModal] = useState(false);
