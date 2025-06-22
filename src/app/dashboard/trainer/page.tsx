@@ -366,6 +366,7 @@ export default function TrainerDashboardPage() {
                     style={{ height: 600 }}
                     toolbar={true}
                     popup={true}
+                    longPressThreshold={100}
                     min={new Date(1970, 0, 1, 8, 0)}
                     max={new Date(1970, 0, 1, 23, 0)}
                     messages={{
