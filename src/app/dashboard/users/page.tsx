@@ -77,12 +77,31 @@ export default function AdminUsersPage() {
 
     const handleRoleChange = async (userId: string, newRole: UserItem["role"]) => {
         try {
-            // 更新 Firestore 欄位
-            await updateDoc(doc(db, "users", userId), { role: newRole });
 
             // 拿當前登入者的 token
             const currentUser = auth.currentUser;
             if (!currentUser) throw new Error("尚未登入");
+
+            // 防止更改自己的角色
+            if (userId === currentUser.uid) {
+                toast.error("無法更改自己的權限");
+                return;
+            }
+
+            // 找到該使用者
+            const targetUser = users.find((u) => u.id === userId);
+            if (!targetUser) {
+                toast.error("找不到該使用者");
+                return;
+            }
+
+            // 防止降級其他 admin
+            if (targetUser.role === "admin") {
+                toast.error("無法更改其他管理員的權限");
+                return;
+            }
+            // 更新 Firestore 欄位
+            await updateDoc(doc(db, "users", userId), { role: newRole });
 
             const token = await getIdToken(currentUser);
 
