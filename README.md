@@ -184,4 +184,4 @@ npm run dev
 ## 👨‍💻 作者
 
 陳昱仲  
-（WeHelp Bootcamp 第三階段個人專案）
+E-mail:volcano1107@gmail.com
