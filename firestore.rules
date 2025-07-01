@@ -1,37 +1,140 @@
 rules_version = '2';
-
 service cloud.firestore {
   match /databases/{database}/documents {
+  
+  	// 訂單規則   
+    match /orders/{orderId} {
+  allow create: if request.auth != null && 
+                request.auth.token.role in ["personalTrainer", "admin"];
 
-    // This rule allows anyone with your Firestore database reference to view, edit,
-    // and delete all data in your Firestore database. It is useful for getting
-    // started, but it is configured to expire after 30 days because it
-    // leaves your app open to attackers. At that time, all client
-    // requests to your Firestore database will be denied.
-    //
-    // Make sure to write security rules for your app before that time, or else
-    // all client requests to your Firestore database will be denied until you Update
-    // your rules
-    match /users/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+  allow get: if request.auth != null &&
+    (
+      request.auth.uid == resource.data.userId ||
+      request.auth.token.role == "admin" ||
+      resource.data.assignedTrainerId == request.auth.uid
+    );
+
+  allow list: if request.auth != null && 
+    request.auth.token.role in ["personalTrainer", "admin"];
+
+  allow update: if request.auth != null &&
+    request.auth.token.role in ["personalTrainer", "admin"];
+
+  allow delete: if false;
+}
+  
+
+    // 體驗私人教練課 預約紀錄
+    match /experienceBookings/{bookingId} {
+  allow create: if request.auth != null &&
+    request.resource.data.userId == request.auth.uid;
+
+  allow get: if request.auth != null &&
+    (
+      resource.data.userId == request.auth.uid ||  // 使用者自己看自己的
+      resource.data.assignedTrainerId == request.auth.uid || // 教練可以看指派給自己的
+      request.auth.token.role == "admin"
+    );
+
+ allow list: if request.auth != null && (
+    request.auth.token.role in ["admin", "personalTrainer"] ||
+    // 讓一般會員可以查詢自己的資料（前端 where 使用）
+    resource.data.userId == request.auth.uid
+);
+
+  allow update: if request.auth != null &&
+    (
+      (
+        request.auth.token.role == "admin" &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(["assignedTrainerId", "status"])
+      ) ||
+      (
+        request.auth.token.role == "personalTrainer" &&
+        resource.data.assignedTrainerId == request.auth.uid &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(["status"]) &&
+        request.resource.data.status in ["contacted", "attended"]
+      )
+    );
+}
+
+    match /groupSchedule/{docId} {
+      allow create, delete: if request.auth != null && request.auth.token.role == "admin";
+      allow read: if true;
     }
-    
-    	// 本人可以讀自己的資料
-    	allow get: if request.auth != null && request.auth.uid == userId;
-      // 本人可以更新自己的資料（除了role）
-      allow update: if request.auth != null && 
-      							request.auth.uid == userId &&
-                    !(("role" in request.resource.data)&& request.resource.data.role != resource.data.role)
-    
-      // admin 可以更新任何人（包括role）
+
+    // 私人教練課程排程紀錄（全域 collection）
+match /privateSchedule/{docId} {
+  allow create: if request.auth != null &&
+                request.auth.token.role == "personalTrainer";
+                
+  allow get, list: if request.auth != null && (
+    // 教練可以看全部
+    request.auth.token.role == "personalTrainer" ||
+    // 學生可以看自己的預約
+    request.auth.uid == resource.data.studentId
+  );
+
+  allow update: if request.auth != null &&
+                request.auth.token.role == "personalTrainer";
+
+  allow delete: if request.auth != null &&
+                request.auth.token.role == "personalTrainer";
+}
+
+    match /groupBookings/{docId} {
+      allow create: if request.auth != null &&
+                    request.resource.data.userId == request.auth.uid;
+
+      allow read: if request.auth != null &&
+        (resource.data.userId == request.auth.uid ||
+         request.auth.token.role == "admin" || 
+         request.auth.token.role == "groupCoach");
+
+      allow delete: if request.auth != null &&
+        (resource.data.userId == request.auth.uid || request.auth.token.role == "admin");
+
+      allow update: if false;
+    }
+
+    match /users/{userId} {
+      // 閱讀權限：本人 or 教練 or admin
+      allow get, list: if request.auth != null &&
+    (
+      request.auth.uid == userId || // 本人
+      request.auth.token.role == "admin" ||
+      request.auth.token.role == "personalTrainer" ||
+      // 🆕 會員可以讀取被指派的教練資訊
+      resource.data.role == "personalTrainer"
+    );
+
+      // 更新權限：
       allow update: if request.auth != null &&
-      							request.auth.token.role == "admin";
-      // 註冊時建立文件
+    (
+      // 本人可更新自己的資料（但不得變更 role）
+      (request.auth.uid == userId &&
+        !(("role" in request.resource.data) && request.resource.data.role != resource.data.role))
+      // ✅ 新增：教練可更新他被指派的學生
+      || (request.auth.token.role == "personalTrainer" &&
+          resource.data.assignedTrainerId == request.auth.uid)
+      || request.auth.token.role == "admin"
+    );
+
       allow create: if request.auth != null && request.auth.uid == userId;
-      // 禁止刪除
       allow delete: if false;
+
+      // 嵌套子集合：個人身體數據與訓練紀錄
+      match /bodyMetrics/{docId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+
+      match /workouts/{docId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+    }
+
+    // 其他 collection 禁止一切操作（防呆保險）
     match /{document=**} {
-      allow read, write: if request.time < timestamp.date(2025, 6, 9);
+      allow read, write: if false;
     }
   }
 }
