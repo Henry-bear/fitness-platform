@@ -103,7 +103,7 @@ match /privateSchedule/{docId} {
       request.auth.uid == userId || // 本人
       request.auth.token.role == "admin" ||
       request.auth.token.role == "personalTrainer" ||
-      // 🆕 會員可以讀取被指派的教練資訊
+      // 會員可以讀取被指派的教練資訊
       resource.data.role == "personalTrainer"
     );
 
@@ -113,7 +113,7 @@ match /privateSchedule/{docId} {
       // 本人可更新自己的資料（但不得變更 role）
       (request.auth.uid == userId &&
         !(("role" in request.resource.data) && request.resource.data.role != resource.data.role))
-      // ✅ 新增：教練可更新他被指派的學生
+      // 新增：教練可更新他被指派的學生
       || (request.auth.token.role == "personalTrainer" &&
           resource.data.assignedTrainerId == request.auth.uid)
       || request.auth.token.role == "admin"
