@@ -50,40 +50,75 @@ FitnessWay 是一個為健身人群打造的網站平台，依照不同角色（
 ### `/member`
 
 - BMI  體脂 身體數值 圖形化  
+  👉 透過【身體數據紀錄表單】輸入數值，自動更新進度圖  
 - 訓練雷達圖 展示訓練類型分佈    
+  👉 透過【訓練紀錄表單】累積每部位的次數統計  
 - 我的預約課程：顯示預約課程（團課、私人教練課預約）
+<img src="./public/images/member-page.png" width="700" alt="會員頁面畫面" />
+
+#### 📝 新增紀錄 Modal（表單輸入）
+
+FitnessWay 提供兩種資料輸入表單，使用者每次填寫記錄後，即可同步更新圖形分析：
+
+1. **身體數據紀錄（BMI / 體脂）**
+   - 輸入身高、體重、體脂 → 進度圖立即更新
+   - Firestore 儲存最新記錄
+<img src="./public/images/body-metric-modal.png" width="400" alt="身體數值畫面" />
+2. **訓練紀錄表單**
+   - 輸入部位、動作、重量、組數、次數、日期
+   - 更新雷達圖（訓練分布）與訓練日期
+<img src="./public/images/training-modal.png" width="400" alt="訓練記錄畫面" />
 
 ### `/group-classes`
 
 - 團體課程表瀏覽  
 - 預約 / 取消功能
+<img src="./public/images/group-class-page.png" width="700" alt="團體課程預約畫面" />
 
 ### `/experience`
 
-- 體驗課網頁預約  
+- 體驗課網頁預約
+<img src="./public/images/experiencePage.png" width="700" alt="體驗課程預約畫面" />
 
 ### `/tdee`
 
 - 基礎代謝 + 活動係數計算  
 - TDEE 計算機
+<img src="./public/images/tdee-page.png" width="700" alt="TDEE計算機畫面" />
 
 ### `/dashboard`
 
 #### Admin
 
-- 使用者權限管理  
-- 團課時段新增 / 刪除  
+- 使用者權限管理
+<img src="./public/images/admin-user-role.png" width="500" alt="權限管理畫面" /> 
+- 團課時段新增 / 刪除
+<img src="./public/images/admin-group-schedule.png" width="500" alt="團課排程畫面" />
 - 指派教練給體驗學員
+<img src="./public/images/admin-experience-manage.png" width="500" alt="體驗課指派畫面" />
 
 #### Group Coach
 
 - 查看所屬課程的報名人數
+<img src="./public/images/group-coach-dashboard.png" width="500" alt="團體課程報名人數畫面" />
 
 #### Personal Trainer
 
-- 私人課排程日曆  
-- 查看所屬學員基本資料與剩餘堂數  
+- 私人課排程日曆
+<img src="./public/images/personalTrainger-calendar.png" width="500" alt="教練個人排程畫面" />
+- 查看所屬學員基本資料與剩餘堂數
+<img src="./public/images/personalTrainer-students.png" width="500" alt="教練課學員畫面" />
 - 管理體驗課名單，模擬購買教練課程流程
+<img src="./public/images/personTrainer-experience.png" width="500" alt="教練體驗課預約名單畫面" />
+<img src="./public/images/purchase-modal.png" width="300" alt="購買課程畫面" />
+
+---
+
+## 🧱 系統架構圖
+
+下圖展示 FitnessWay 的角色權限管理與資料流動架構：
+
+<img src="./public/images/fitnessway-system-architecture.png" width="700" alt="FitnessWay 系統架構圖" />
 
 ---
 
@@ -139,13 +174,6 @@ npm run dev
 
 ---
 
-## 📈 未來擴充規劃（Ideas）
-
-- 顯示每月營收與課程銷售統計
-- 分析圖表：團課類型占比 / 課程使用率 / 教練績效
-- 儀表板式管理頁面（Dashboard Analytics）
-
----
 
 ## 📎 專案連結
 
