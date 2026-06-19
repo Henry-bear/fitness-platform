@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { auth, db } from "@/lib/firebase";
 import { useRouter } from "next/navigation";
-import { addDoc, collection, getDocs, serverTimestamp, Timestamp, query, where, doc, deleteDoc } from "firebase/firestore";
+import { collection, getDocs, serverTimestamp, Timestamp, query, where, doc, deleteDoc, setDoc } from "firebase/firestore";
 import { onAuthStateChanged, User } from "firebase/auth";
 import dayjs from "dayjs";
 import isBetween from "dayjs/plugin/isBetween";
@@ -129,7 +129,7 @@ export default function GroupClassesPage() {
         }
 
         try {
-            await addDoc(collection(db, "groupBookings"), {
+            await setDoc(doc(db, "groupBookings", `${user.uid}_${groupClassId}`), {
                 userId: user.uid,
                 groupClassId,
                 createdAt: serverTimestamp(),

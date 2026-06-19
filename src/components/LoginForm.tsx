@@ -3,16 +3,18 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { auth } from "@/lib/firebase";
-import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth, db } from "@/lib/firebase";
+import { signInWithEmailAndPassword, signOut } from "firebase/auth";
 import { browserLocalPersistence, setPersistence } from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore";
+import { isValidEmail, normalizeEmail } from "@/lib/validation";
 
 export default function LoginForm() {
     const router = useRouter();
 
     // 使用者輸入欄位
-    const [email, setEmail] = useState("admin@msn.com");
-    const [password, setPassword] = useState("admin123");
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
 
     // UI 狀態
     const [loading, setLoading] = useState(false);
@@ -20,12 +22,23 @@ export default function LoginForm() {
     // 表單處理函式
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+        const cleanEmail = normalizeEmail(email);
+        if (!isValidEmail(cleanEmail)) {
+            toast.error("請輸入有效的 Email");
+            return;
+        }
         setLoading(true);
 
         try {
             // 呼叫 firebase 登入方法 (setPersistence 保留 session)
             await setPersistence(auth, browserLocalPersistence);
-            await signInWithEmailAndPassword(auth, email, password);
+            const credential = await signInWithEmailAndPassword(auth, cleanEmail, password);
+            const profile = await getDoc(doc(db, "users", credential.user.uid));
+            if (profile.data()?.requiresEmailVerification && !credential.user.emailVerified) {
+                await signOut(auth);
+                toast.error("請先至信箱完成 Email 驗證後再登入");
+                return;
+            }
 
             // 成功後顯示歡迎訊息
             toast.success("登入成功！")
@@ -52,6 +65,7 @@ export default function LoginForm() {
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
+                    autoComplete="email"
                     className="w-full rounded-xl border border-white/10 bg-zinc-900 px-3 py-3 text-white outline-none transition focus:border-orange-500/70 focus:ring-2 focus:ring-orange-500/15"
                     required
                 />
@@ -65,6 +79,7 @@ export default function LoginForm() {
                     type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
+                    autoComplete="current-password"
                     className="w-full rounded-xl border border-white/10 bg-zinc-900 px-3 py-3 text-white outline-none transition focus:border-orange-500/70 focus:ring-2 focus:ring-orange-500/15"
                     required
                 />

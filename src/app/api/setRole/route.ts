@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import admin from "@/lib/firebase-admin";
+import { adminAuth, adminDb } from "@/lib/firebase-admin";
 
 const validRoles = ["member", "groupCoach", "personalTrainer", "admin"] as const;
 
@@ -29,7 +29,7 @@ export async function POST(req: Request) {
         }
 
         // 驗證 token 並檢查 role
-        const decoded = await admin.auth().verifyIdToken(token);
+        const decoded = await adminAuth.verifyIdToken(token);
 
         if (decoded.role !== "admin") {
             return NextResponse.json({ error: "沒有權限執行此操作" }, { status: 403 });
@@ -40,7 +40,7 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: "不能變更自己的角色" }, { status: 400 });
         }
 
-        const targetUser = await admin.auth().getUser(uid);
+        const targetUser = await adminAuth.getUser(uid);
         const existingClaims = targetUser.customClaims ?? {};
 
         if (existingClaims.role === "admin") {
@@ -48,12 +48,12 @@ export async function POST(req: Request) {
         }
 
         const updatedClaims = { ...existingClaims, role };
-        await admin.auth().setCustomUserClaims(uid, updatedClaims);
+        await adminAuth.setCustomUserClaims(uid, updatedClaims);
 
         try {
-            await admin.firestore().doc(`users/${uid}`).update({ role });
+            await adminDb.doc(`users/${uid}`).update({ role });
         } catch (error) {
-            await admin.auth().setCustomUserClaims(uid, existingClaims);
+            await adminAuth.setCustomUserClaims(uid, existingClaims);
             throw error;
         }
 

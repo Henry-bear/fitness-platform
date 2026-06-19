@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 import { onAuthStateChanged, User } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { motion } from "framer-motion";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { Activity, ArrowRight, CalendarDays, Dumbbell } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import RegisterModal from "@/components/RegisterModal";
@@ -25,6 +26,7 @@ export default function Home() {
   const [, setRefreshTrigger] = useState(Date.now());
   const { role, loading: roleLoading } = useCustomClaimRole(user ?? null);
   const [menuOpen, setMenuOpen] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
@@ -37,6 +39,15 @@ export default function Home() {
 
   const handleRefresh = () => {
     setRefreshTrigger(Date.now());
+  };
+
+  const openProtectedPage = (path: string) => {
+    if (user) {
+      router.push(path);
+      return;
+    }
+    toast.info("請先登入或建立會員帳號後再繼續");
+    setShowLogin(true);
   };
 
   return (
@@ -146,12 +157,12 @@ export default function Home() {
                 transition={{ duration: 0.65, delay: 0.3 }}
                 className="mt-8 flex flex-wrap gap-3"
               >
-                <Link href={user ? "/member" : "/experience"} className="group inline-flex items-center gap-2 rounded-xl bg-orange-500 px-5 py-3 font-semibold shadow-xl shadow-orange-950/40 transition hover:-translate-y-0.5 hover:bg-orange-400">
+                <button type="button" onClick={() => openProtectedPage(user ? "/member" : "/experience")} className="group inline-flex items-center gap-2 rounded-xl bg-orange-500 px-5 py-3 font-semibold shadow-xl shadow-orange-950/40 transition hover:-translate-y-0.5 hover:bg-orange-400">
                   {user ? "查看我的進度" : "預約體驗課程"}<ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" />
-                </Link>
-                <Link href="/group-classes" className="inline-flex items-center gap-2 rounded-xl border border-white/15 bg-white/[0.06] px-5 py-3 font-semibold text-zinc-200 backdrop-blur-md transition hover:border-orange-400/35 hover:bg-orange-400/10 hover:text-white">
+                </button>
+                <button type="button" onClick={() => openProtectedPage("/group-classes")} className="inline-flex items-center gap-2 rounded-xl border border-white/15 bg-white/[0.06] px-5 py-3 font-semibold text-zinc-200 backdrop-blur-md transition hover:border-orange-400/35 hover:bg-orange-400/10 hover:text-white">
                   探索團體課程
-                </Link>
+                </button>
               </motion.div>
             </div>
 

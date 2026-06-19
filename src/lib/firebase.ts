@@ -2,6 +2,7 @@
 import { initializeApp, getApp, getApps } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
+import { initializeAppCheck, ReCaptchaEnterpriseProvider } from "firebase/app-check";
 
 const firebaseConfig = {
     apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -14,6 +15,18 @@ const firebaseConfig = {
 
 // 避免重複初始化
 const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
+
+const appCheckSiteKey = process.env.NEXT_PUBLIC_RECAPTCHA_ENTERPRISE_SITE_KEY;
+if (typeof window !== "undefined" && appCheckSiteKey) {
+    const appCheckWindow = window as typeof window & { __fitnesswayAppCheckInitialized?: boolean };
+    if (!appCheckWindow.__fitnesswayAppCheckInitialized) {
+        initializeAppCheck(app, {
+            provider: new ReCaptchaEnterpriseProvider(appCheckSiteKey),
+            isTokenAutoRefreshEnabled: true,
+        });
+        appCheckWindow.__fitnesswayAppCheckInitialized = true;
+    }
+}
 
 export const auth = getAuth(app);
 export const db = getFirestore(app);

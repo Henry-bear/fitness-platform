@@ -160,7 +160,7 @@ export default function Navbar({
                         {!authLoading && (
                             <button
                                 onClick={toggleMenu}
-                                className="flex h-12 w-12 flex-col items-center justify-center gap-[5px] text-white"
+                                className={`flex h-11 w-11 flex-col items-center justify-center gap-[5px] rounded-full border transition ${menuOpen ? "border-orange-400/50 bg-orange-500/12 text-orange-300 shadow-lg shadow-orange-950/30" : "border-white/10 bg-white/[0.04] text-white hover:border-white/25 hover:bg-white/[0.08]"}`}
                                 aria-label={menuOpen ? "關閉主選單" : "開啟主選單"}
                                 aria-expanded={menuOpen}
                                 aria-controls="mobile-menu"

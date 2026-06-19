@@ -9,7 +9,7 @@ import BodyShape from "@/components/BodyShape";
 import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
 import TrainingRadarChart from "./TrainingRadarChart";
-import { Ruler, Weight } from "lucide-react";
+import { CalendarDays, Ruler, Weight } from "lucide-react";
 
 type Props = {
     userId: string;
@@ -67,13 +67,6 @@ export default function LatestBodyMetric({ userId, user, refreshTrigger }: Props
 
     const { height, weight, bodyFat } = latest;
     const bmi = weight / ((height / 100) ** 2);
-    function getShapeType(bmi: number, fat: number): "slim" | "normal" | "overweight" {
-        if (bmi < 18.5 || fat < 12) return "slim";             // 偏瘦或精壯
-        if (bmi >= 27 || fat >= 25) return "overweight";       // 過重或體脂偏高
-        return "normal";                                       // 介於中間者
-    }
-
-    const shapeType = getShapeType(bmi, bodyFat);
     const bmiLabel =
         bmi < 18.5 ? "過輕" : bmi < 24 ? "正常" : bmi < 27 ? "過重" : "肥胖";
     const fatLabel =
@@ -98,32 +91,33 @@ export default function LatestBodyMetric({ userId, user, refreshTrigger }: Props
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="mx-auto w-full max-w-4xl text-white"
+            className="mx-auto w-full max-w-6xl text-white"
         >
-            <h3 className="text-xl font-bold text-orange-400 mb-4 text-center tracking-wide">
-                目前身體數據
-            </h3>
+            <div className="mb-4 flex flex-col items-center justify-between gap-2 sm:flex-row">
+                <h3 className="text-xl font-bold tracking-wide text-orange-400">目前身體數據</h3>
+                <p className="flex items-center gap-1.5 text-xs text-zinc-500"><CalendarDays className="h-3.5 w-3.5" />更新於 {latest.date}</p>
+            </div>
 
             <div className="grid grid-cols-2 gap-3 text-white sm:grid-cols-4 sm:gap-4">
-                <div className="flex min-w-0 flex-col items-center justify-center rounded-xl border border-orange-500/80 bg-zinc-900/75 p-4 shadow-lg shadow-black/20 backdrop-blur-sm transition duration-300 min-h-[180px] sm:min-h-[200px] hover:-translate-y-1 hover:border-orange-300 hover:shadow-orange-500/10">
-                    <Ruler className="w-12 h-12 text-orange-400 mb-2" />
+                <div className="flex min-h-[126px] min-w-0 flex-col items-center justify-center rounded-2xl border border-white/10 bg-zinc-900/70 p-3 shadow-lg shadow-black/20 backdrop-blur-sm transition duration-300 hover:-translate-y-1 hover:border-orange-400/50 hover:shadow-orange-500/10">
+                    <Ruler className="mb-2 h-7 w-7 text-orange-400" />
                     <div className="text-sm text-orange-400 font-medium">身高</div>
-                    <div className="text-2xl font-bold">{height} cm</div>
+                    <div className="mt-1 text-xl font-bold">{height} <span className="text-xs font-medium text-zinc-500">cm</span></div>
                 </div>
-                <div className="flex min-w-0 flex-col items-center justify-center rounded-xl border border-orange-500/80 bg-zinc-900/75 p-4 shadow-lg shadow-black/20 backdrop-blur-sm transition duration-300 min-h-[180px] sm:min-h-[200px] hover:-translate-y-1 hover:border-orange-300 hover:shadow-orange-500/10">
-                    <Weight className="w-12 h-12 text-orange-400 mb-2" />
+                <div className="flex min-h-[126px] min-w-0 flex-col items-center justify-center rounded-2xl border border-white/10 bg-zinc-900/70 p-3 shadow-lg shadow-black/20 backdrop-blur-sm transition duration-300 hover:-translate-y-1 hover:border-orange-400/50 hover:shadow-orange-500/10">
+                    <Weight className="mb-2 h-7 w-7 text-orange-400" />
                     <div className="text-sm text-orange-400 font-medium">體重</div>
-                    <div className="text-2xl font-bold">{weight} kg</div>
+                    <div className="mt-1 text-xl font-bold">{weight} <span className="text-xs font-medium text-zinc-500">kg</span></div>
                 </div>
-                <div className="flex min-w-0 flex-col items-center justify-center rounded-xl border border-orange-500/80 bg-zinc-900/75 p-4 text-center shadow-lg shadow-black/20 backdrop-blur-sm transition duration-300 min-h-[180px] sm:min-h-[200px] hover:-translate-y-1 hover:border-orange-300 hover:shadow-orange-500/10">
-                    <div className="w-full max-w-[150px] px-2">
+                <div className="flex min-h-[126px] min-w-0 items-center justify-center gap-3 rounded-2xl border border-white/10 bg-zinc-900/70 p-3 text-center shadow-lg shadow-black/20 backdrop-blur-sm transition duration-300 hover:-translate-y-1 hover:border-orange-400/50 hover:shadow-orange-500/10">
+                    <div className="w-[74px] shrink-0">
                         <CircularProgressbar
                             value={animatedBmi}
                             maxValue={40}
                             text={`${bmi.toFixed(1)}`}
                             styles={buildStyles({
                                 textColor: "#fff",
-                                textSize: "16px",
+                                textSize: "18px",
                                 pathColor: bmi < 18.5
                                     ? "#3b82f6"
                                     : bmi < 24
@@ -135,20 +129,17 @@ export default function LatestBodyMetric({ userId, user, refreshTrigger }: Props
                             })}
                         />
                     </div>
-                    <div className="text-sm mt-2 text-orange-400 font-medium">BMI</div>
-                    <div className={`text-xs font-semibold ${getBmiColor(animatedBmi)}`}>
-                        {bmiLabel}
-                    </div>
+                    <div className="text-left"><div className="text-sm text-orange-400 font-medium">BMI</div><div className={`mt-1 text-xs font-semibold ${getBmiColor(animatedBmi)}`}>{bmiLabel}</div></div>
                 </div>
-                <div className="flex min-w-0 flex-col items-center justify-center rounded-xl border border-orange-500/80 bg-zinc-900/75 p-4 text-center shadow-lg shadow-black/20 backdrop-blur-sm transition duration-300 min-h-[180px] sm:min-h-[200px] hover:-translate-y-1 hover:border-orange-300 hover:shadow-orange-500/10">
-                    <div className="w-full max-w-[150px] px-2">
+                <div className="flex min-h-[126px] min-w-0 items-center justify-center gap-3 rounded-2xl border border-white/10 bg-zinc-900/70 p-3 text-center shadow-lg shadow-black/20 backdrop-blur-sm transition duration-300 hover:-translate-y-1 hover:border-orange-400/50 hover:shadow-orange-500/10">
+                    <div className="w-[74px] shrink-0">
                         <CircularProgressbar
                             value={animatedFat}
                             maxValue={60}
                             text={`${bodyFat}%`}
                             styles={buildStyles({
                                 textColor: "#fff",
-                                textSize: "16px",
+                                textSize: "18px",
                                 pathColor: bodyFat < 15
                                     ? "#3b82f6"   // 精壯
                                     : bodyFat < 25
@@ -160,23 +151,13 @@ export default function LatestBodyMetric({ userId, user, refreshTrigger }: Props
                             })}
                         />
                     </div>
-                    <div className="text-sm mt-2 text-orange-400 font-medium">體脂</div>
-                    <div className={`text-xs font-semibold ${getFatColor(animatedFat)}`}>
-                        {fatLabel}
-                    </div>
+                    <div className="text-left"><div className="text-sm text-orange-400 font-medium">體脂</div><div className={`mt-1 text-xs font-semibold ${getFatColor(animatedFat)}`}>{fatLabel}</div></div>
                 </div>
             </div>
 
-            <div className="mt-10 flex flex-col md:flex-row items-center gap-6 max-w-5xl mx-auto">
-                {/* 左側：圖片 */}
-                <div className="w-full md:w-1/2">
-                    <BodyShape type={shapeType} />
-                </div>
-
-                {/* 右側：雷達圖 */}
-                <div className="w-full md:w-1/2">
-                    <TrainingRadarChart user={user} refreshTrigger={refreshTrigger} />
-                </div>
+            <div className="mx-auto mt-5 grid max-w-6xl items-stretch gap-5 lg:grid-cols-[0.9fr_1.1fr]">
+                <BodyShape height={height} weight={weight} bodyFat={bodyFat} bmi={bmi} />
+                <TrainingRadarChart user={user} refreshTrigger={refreshTrigger} />
             </div>
         </motion.div>
     );

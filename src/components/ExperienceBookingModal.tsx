@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { db } from "@/lib/firebase";
-import { addDoc, collection, Timestamp, getDocs, query, where, doc, getDoc } from "firebase/firestore";
+import { Timestamp, getDocs, query, where, doc, getDoc, setDoc, collection } from "firebase/firestore";
 import { User } from "firebase/auth";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
@@ -28,6 +28,10 @@ export default function ExperienceBookingModal({ user, onClose }: Props) {
             }
             // 檢查是否為正式會員
             const userDoc = await getDoc(doc(db, "users", user.uid));
+            if (!userDoc.exists()) {
+                toast.error("找不到會員資料，請重新登入後再試");
+                return;
+            }
             if (userDoc.exists() && userDoc.data().isFormalMember) {
                 toast.error("您已體驗過，建議您詢問所屬教練。");
                 setLoading(false);
@@ -47,10 +51,10 @@ export default function ExperienceBookingModal({ user, onClose }: Props) {
                 return;
             }
 
-            await addDoc(collection(db, "experienceBookings"), {
+            await setDoc(doc(db, "experienceBookings", user.uid), {
                 userId: user.uid,
-                userName: user.displayName || "匿名使用者",
-                email: user.email || "",
+                userName: userDoc.data().name,
+                email: userDoc.data().email,
                 preferredTime,
                 status: "pending",
                 assignedTrainerId: "",

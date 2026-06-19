@@ -36,9 +36,9 @@ export default function BodyMetricModal({ userId, onClose, onSaved }: Props) {
 
         try {
             await addDoc(collection(db, "users", userId, "bodyMetrics"), {
-                height,
-                weight,
-                bodyFat,
+                height: Number(height),
+                weight: Number(weight),
+                bodyFat: Number(bodyFat),
                 createdAt: serverTimestamp(),
             });
 

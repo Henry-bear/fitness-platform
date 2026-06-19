@@ -216,14 +216,11 @@ export default function PurchaseModal({ open, onClose, student }: Props) {
                 return;
             }
 
-            const prime = result.card.prime;
-
             try {
                 // 1. 更新訂單狀態為已付款
                 if (orderId) {
                     await updateDoc(doc(db, "orders", orderId), {
                         status: "paid",
-                        tappayPrime: prime,
                         paidAt: serverTimestamp(),
                     });
                 }

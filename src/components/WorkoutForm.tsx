@@ -115,7 +115,7 @@ export default function WorkoutForm({ user, onClose, onSaved }: Props) {
     return (
         <ModalPortal>
         <div
-            className="fixed inset-0 z-[999] flex items-center justify-center overflow-y-auto bg-black/75 p-4 backdrop-blur-md"
+            className="fixed inset-0 z-[999] flex items-center justify-center overflow-x-hidden overflow-y-auto bg-black/75 p-2 backdrop-blur-md sm:p-4"
             role="dialog"
             aria-modal="true"
             aria-labelledby="workout-form-title"
@@ -125,7 +125,7 @@ export default function WorkoutForm({ user, onClose, onSaved }: Props) {
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: 12, scale: 0.97 }}
                 transition={{ duration: 0.22 }}
-                className="relative max-h-[92vh] w-full max-w-2xl overflow-y-auto rounded-3xl border border-white/10 bg-zinc-950/95 p-5 text-white shadow-2xl shadow-black/60 sm:p-6"
+                className="relative max-h-[92dvh] min-w-0 w-full max-w-2xl overflow-x-hidden overflow-y-auto rounded-3xl border border-white/10 bg-zinc-950/95 p-4 text-white shadow-2xl shadow-black/60 sm:p-6"
             >
                 <div aria-hidden="true" className="absolute -right-16 -top-16 h-48 w-48 rounded-full bg-orange-500/15 blur-3xl" />
                 <button type="button" onClick={onClose} aria-label="關閉訓練紀錄視窗" className="absolute right-4 top-4 z-10 rounded-full border border-white/10 bg-white/5 p-2 text-zinc-400 transition hover:bg-white/10 hover:text-white">
@@ -140,7 +140,7 @@ export default function WorkoutForm({ user, onClose, onSaved }: Props) {
                     </div>
                 </div>
 
-                <form onSubmit={handleSubmit} className="relative">
+                <form onSubmit={handleSubmit} className="relative min-w-0 max-w-full">
                     {exercises.map((exercise, index) => {
                         const isExpanded = expandedIndex === index;
                         const currentOptions = exercise.part && exercise.part in partOptions ? partOptions[exercise.part as PartKey] : [];
@@ -189,10 +189,10 @@ export default function WorkoutForm({ user, onClose, onSaved }: Props) {
                                             ))}
                                         </select>
 
-                                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-                                            <input type="number" min="1" value={exercise.weight} onChange={(e) => handleChange(index, "weight", e.target.value)} placeholder="重量 kg" className="w-full rounded-xl border border-white/10 bg-zinc-900 px-3 py-3 text-white outline-none transition placeholder:text-zinc-600 focus:border-orange-500/70 focus:ring-2 focus:ring-orange-500/15" />
-                                            <input type="number" min="1" value={exercise.sets} onChange={(e) => handleChange(index, "sets", e.target.value)} placeholder="組數" className="w-full rounded-xl border border-white/10 bg-zinc-900 px-3 py-3 text-white outline-none transition placeholder:text-zinc-600 focus:border-orange-500/70 focus:ring-2 focus:ring-orange-500/15" />
-                                            <input type="number" min="1" value={exercise.reps} onChange={(e) => handleChange(index, "reps", e.target.value)} placeholder="次數" className="w-full rounded-xl border border-white/10 bg-zinc-900 px-3 py-3 text-white outline-none transition placeholder:text-zinc-600 focus:border-orange-500/70 focus:ring-2 focus:ring-orange-500/15" />
+                                        <div className="grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-3">
+                                            <input type="number" inputMode="decimal" min="1" value={exercise.weight} onChange={(e) => handleChange(index, "weight", e.target.value)} placeholder="重量 kg" className="min-w-0 w-full max-w-full rounded-xl border border-white/10 bg-zinc-900 px-3 py-3 text-white outline-none transition placeholder:text-zinc-600 focus:border-orange-500/70 focus:ring-2 focus:ring-orange-500/15" />
+                                            <input type="number" inputMode="numeric" min="1" value={exercise.sets} onChange={(e) => handleChange(index, "sets", e.target.value)} placeholder="組數" className="min-w-0 w-full max-w-full rounded-xl border border-white/10 bg-zinc-900 px-3 py-3 text-white outline-none transition placeholder:text-zinc-600 focus:border-orange-500/70 focus:ring-2 focus:ring-orange-500/15" />
+                                            <input type="number" inputMode="numeric" min="1" value={exercise.reps} onChange={(e) => handleChange(index, "reps", e.target.value)} placeholder="次數" className="min-w-0 w-full max-w-full rounded-xl border border-white/10 bg-zinc-900 px-3 py-3 text-white outline-none transition placeholder:text-zinc-600 focus:border-orange-500/70 focus:ring-2 focus:ring-orange-500/15" />
                                         </div>
                                     </motion.div>
                                 )}
@@ -204,9 +204,9 @@ export default function WorkoutForm({ user, onClose, onSaved }: Props) {
                         <Plus className="h-4 w-4" />新增訓練項目
                     </button>
 
-                    <div className="mb-4">
+                    <div className="mb-4 min-w-0 max-w-full overflow-hidden">
                         <label htmlFor="workout-date" className="mb-2 flex items-center gap-2 text-sm font-medium text-zinc-300"><CalendarDays className="h-4 w-4 text-orange-400" />訓練日期</label>
-                        <input id="workout-date" type="date" value={date} onChange={(e) => setDate(e.target.value)} max={today} className="w-full rounded-xl border border-white/10 bg-zinc-900 px-3 py-3 text-white outline-none transition focus:border-orange-500/70 focus:ring-2 focus:ring-orange-500/15" />
+                        <input id="workout-date" type="date" value={date} onChange={(e) => setDate(e.target.value)} max={today} className="block min-w-0 w-full max-w-full rounded-xl border border-white/10 bg-zinc-900 px-3 py-3 text-white outline-none transition focus:border-orange-500/70 focus:ring-2 focus:ring-orange-500/15" />
                     </div>
 
                     <div className="grid grid-cols-2 gap-3 border-t border-white/10 pt-4">
