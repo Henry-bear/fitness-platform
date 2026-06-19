@@ -12,11 +12,12 @@ import {
     getDoc,
     deleteDoc,
 } from "firebase/firestore";
-import { CalendarCheck } from "lucide-react";
+import { CalendarCheck, CalendarDays, Clock3, Dumbbell, Users } from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { Timestamp } from "firebase/firestore";
 import dayjs from "dayjs";
+import ModalShell from "./ModalShell";
 
 type Props = {
     user: User;
@@ -182,41 +183,19 @@ export default function BookingBell({ user }: Props) {
                 </button>
             </motion.div>
 
-            <AnimatePresence>
-                {showModal && (
-                    <motion.div
-                        className="fixed inset-0 bg-black bg-opacity-40 backdrop-blur-sm flex justify-center items-center z-50"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                    >
-                        <motion.div
-                            className="bg-zinc-900 text-white rounded-lg p-6 max-w-md w-full"
-                            initial={{ scale: 0.8, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            exit={{ scale: 0.8, opacity: 0 }}
-                            transition={{ duration: 0.3 }}
-                        >
-                            <div className="flex justify-between items-center mb-4">
-                                <h2 className="text-lg font-bold text-orange-500">已預約課程</h2>
-                                <button
-                                    onClick={() => setShowModal(false)}
-                                    className="text-zinc-400 hover:text-white"
-                                >
-                                    ✕
-                                </button>
-                            </div>
+            <ModalShell open={showModal} onClose={() => setShowModal(false)} title="我的預約課程" description="查看私人教練與團體課程安排" icon={<CalendarCheck className="h-5 w-5" />} titleId="my-bookings-title" maxWidth="lg">
+                        <div className="max-h-[65vh] space-y-4 overflow-y-auto pr-1">
 
                             {/* 私人教練課程區塊 */}
-                            <div className="mb-6 border border-orange-500 bg-zinc-800 rounded-lg p-4">
-                                <h3 className="text-md font-bold text-orange-500 mb-3">私人教練課程</h3>
+                            <section className="rounded-2xl border border-white/10 bg-white/[0.035] p-4">
+                                <h3 className="mb-3 flex items-center gap-2 font-semibold text-white"><Dumbbell className="h-4 w-4 text-orange-400" />私人教練課程</h3>
 
                                 {/* 堂數顯示獨立區塊 */}
-                                <div className="border border-orange-400 rounded p-3 bg-zinc-900 mb-5 shadow-sm">
+                                <div className="mb-4 flex items-center justify-between rounded-xl border border-orange-400/15 bg-orange-400/[0.06] p-3">
                                     {remainingSessions !== null ? (
-                                        <p className="text-sm text-zinc-200">
-                                            您的教練課堂數：
-                                            <span className="text-orange-400 font-bold ml-1">{remainingSessions}</span> 堂
+                                        <p className="flex w-full items-center justify-between text-sm text-zinc-400">
+                                            可用教練課堂數
+                                            <span className="text-xl font-bold text-orange-300">{remainingSessions}<small className="ml-1 text-xs font-normal text-zinc-500">堂</small></span>
                                         </p>
                                     ) : (
                                         <p className="text-sm text-zinc-400">無法取得堂數資料</p>
@@ -224,17 +203,17 @@ export default function BookingBell({ user }: Props) {
                                 </div>
 
                                 {privateBookings.length > 0 ? (
-                                    <ul className="space-y-3">
+                                    <ul className="space-y-2">
                                         {privateBookings.map((item) => (
                                             <li
                                                 key={item.id}
-                                                className="border border-orange-500 rounded p-3 bg-zinc-900 shadow-sm"
+                                                className="rounded-xl border border-white/10 bg-black/20 p-3"
                                             >
-                                                <div className="font-semibold text-orange-400">一對一課程
-                                                    {item.studentType === "experience" && <span className="ml-2 text-sm text-orange-300">(體驗)</span>}
+                                                <div className="flex items-center justify-between font-medium text-white">一對一課程
+                                                    {item.studentType === "experience" && <span className="rounded-full bg-orange-400/10 px-2 py-0.5 text-[10px] text-orange-300">體驗</span>}
                                                 </div>
-                                                <div className="text-sm text-zinc-300">教練：{item.trainerName}</div>
-                                                <div className="text-sm text-zinc-400">
+                                                <div className="mt-2 flex items-center gap-2 text-sm text-zinc-400"><Users className="h-3.5 w-3.5 text-orange-400" />{item.trainerName} 教練</div>
+                                                <div className="mt-1 flex items-center gap-2 text-sm text-zinc-500"><Clock3 className="h-3.5 w-3.5 text-orange-400" />
                                                     {dayjs(item.date).format("YYYY/MM/DD")} | {item.startTime} - {item.endTime}
                                                 </div>
                                             </li>
@@ -243,11 +222,11 @@ export default function BookingBell({ user }: Props) {
                                 ) : (
                                     <p className="text-sm text-zinc-400">目前沒有私人教練預約</p>
                                 )}
-                            </div>
+                            </section>
 
                             {/* 團體課程區塊 */}
-                            <div className="border border-orange-500 bg-zinc-800 rounded-lg p-4">
-                                <h3 className="text-md font-bold text-orange-500 mb-3">團體課程</h3>
+                            <section className="rounded-2xl border border-white/10 bg-white/[0.035] p-4">
+                                <h3 className="mb-3 flex items-center gap-2 font-semibold text-white"><CalendarDays className="h-4 w-4 text-orange-400" />團體課程</h3>
                                 {bookings.length === 0 ? (
                                     <p className="text-sm text-zinc-400">目前沒有預約團體課程</p>
                                 ) : (
@@ -260,11 +239,11 @@ export default function BookingBell({ user }: Props) {
                                                     animate={{ opacity: 1, height: "auto" }}
                                                     exit={{ opacity: 0, height: 0 }}
                                                     transition={{ duration: 0.3 }}
-                                                    className="border border-orange-500 rounded p-3 bg-zinc-900 shadow-sm overflow-hidden"
+                                                    className="overflow-hidden rounded-xl border border-white/10 bg-black/20 p-3"
                                                 >
-                                                    <div className="font-semibold text-orange-400">{item.title}</div>
-                                                    <div className="text-sm text-zinc-300">{item.coach} 教練</div>
-                                                    <div className="text-sm text-zinc-400">
+                                                    <div className="font-semibold text-white">{item.title}</div>
+                                                    <div className="mt-1 text-sm text-zinc-400">{item.coach} 教練</div>
+                                                    <div className="mt-1 text-sm text-zinc-500">
                                                         {dayjs(
                                                             item.date instanceof Timestamp ? item.date.toDate() : item.date
                                                         ).format("YYYY/MM/DD")}{" "}
@@ -272,7 +251,7 @@ export default function BookingBell({ user }: Props) {
                                                     </div>
                                                     <button
                                                         onClick={() => handleCancel(item.id)}
-                                                        className="mt-2 text-sm text-red-400 border border-red-400 px-2 py-1 rounded hover:bg-red-600 hover:text-white transition"
+                                                        className="mt-3 rounded-lg border border-red-400/20 bg-red-400/[0.06] px-3 py-1.5 text-xs font-medium text-red-300 transition hover:bg-red-400/10"
                                                     >
                                                         取消預約
                                                     </button>
@@ -281,11 +260,9 @@ export default function BookingBell({ user }: Props) {
                                         </AnimatePresence>
                                     </ul>
                                 )}
-                            </div>
-                        </motion.div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
+                            </section>
+                        </div>
+            </ModalShell>
         </div>
     );
 }

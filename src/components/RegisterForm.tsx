@@ -70,43 +70,45 @@ export default function RegisterForm({ onSuccess }: { onSuccess?: () => void }) 
     };
 
     return (
-        <form onSubmit={handleSubmit} className="max-w-md mx-auto mt-12 p-6 bg-zinc-900 rounded shadow text-white">
-            <h2 className="text-2xl font-bold mb-6 text-center text-orange-500">註冊帳號</h2>
+        <form onSubmit={handleSubmit} className="space-y-4 text-white">
 
-            <div className="mb-4">
-                <label className="block text-sm mb-1">姓名</label>
+            <div>
+                <label htmlFor="register-name" className="mb-2 block text-sm font-medium text-zinc-300">姓名</label>
                 <input
+                    id="register-name"
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="w-full px-3 py-2 rounded bg-zinc-800 border border-zinc-700 text-white"
+                    className="w-full rounded-xl border border-white/10 bg-zinc-900 px-3 py-3 text-white outline-none transition focus:border-orange-500/70 focus:ring-2 focus:ring-orange-500/15"
                     required />
             </div>
-            <div className="mb-4">
-                <label className="block text-sm mb-1">Email</label>
+            <div>
+                <label htmlFor="register-email" className="mb-2 block text-sm font-medium text-zinc-300">Email</label>
                 <input
+                    id="register-email"
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full px-3 py-2 rounded bg-zinc-800 border border-zinc-700 text-white"
+                    className="w-full rounded-xl border border-white/10 bg-zinc-900 px-3 py-3 text-white outline-none transition focus:border-orange-500/70 focus:ring-2 focus:ring-orange-500/15"
                     required
                 />
             </div>
 
-            <div className="mb-6">
-                <label className="block text-sm mb-1">密碼</label>
+            <div>
+                <label htmlFor="register-password" className="mb-2 block text-sm font-medium text-zinc-300">密碼</label>
                 <input
+                    id="register-password"
                     type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full px-3 py-2 rounded bg-zinc-800 border border-zinc-700 text-white"
+                    className="w-full rounded-xl border border-white/10 bg-zinc-900 px-3 py-3 text-white outline-none transition focus:border-orange-500/70 focus:ring-2 focus:ring-orange-500/15"
                     required
                 />
             </div>
 
             <button
                 type="submit"
-                className="w-full bg-orange-500 text-white py-2 rounded hover:bg-orange-600 disabled:opacity-50 cursor-pointer"
+                className="mt-2 w-full rounded-xl bg-orange-500 px-4 py-3 font-semibold text-white shadow-lg shadow-orange-950/40 transition hover:-translate-y-0.5 hover:bg-orange-400 disabled:translate-y-0 disabled:opacity-50"
                 disabled={loading}
             >
                 {loading ? "註冊中..." : "註冊"}

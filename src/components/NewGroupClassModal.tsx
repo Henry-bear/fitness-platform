@@ -4,8 +4,9 @@ import { useEffect, useState } from "react";
 import { addDoc, collection, Timestamp, getDocs, query, where } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { toast } from "sonner";
-import { motion, AnimatePresence } from "framer-motion";
 import dayjs from "dayjs";
+import { CalendarPlus } from "lucide-react";
+import ModalShell from "./ModalShell";
 
 export default function NewGroupClassModal({ isOpen, onClose, onSuccess }: { isOpen: boolean; onClose: () => void; onSuccess: () => void; }) {
     const [title, setTitle] = useState("");
@@ -108,26 +109,12 @@ export default function NewGroupClassModal({ isOpen, onClose, onSuccess }: { isO
     if (!isOpen) return null;
 
     return (
-        <AnimatePresence>
-            <motion.div
-                className="fixed inset-0 bg-black/60 flex justify-center items-center z-50"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-            >
-                <motion.div
-                    className="bg-white text-black rounded-lg w-full max-w-md p-6"
-                    initial={{ scale: 0.8, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    exit={{ scale: 0.8, opacity: 0 }}
-                    transition={{ duration: 0.3 }}
-                >
-                    <h2 className="text-xl font-bold mb-4">預約團體課程</h2>
+        <ModalShell open={isOpen} onClose={onClose} title="新增團體課程" description="設定課程、教練與授課時段" icon={<CalendarPlus className="h-5 w-5" />} titleId="new-group-class-title">
                     <div className="space-y-4">
                         <select
                             value={title}
                             onChange={(e) => setTitle(e.target.value)}
-                            className="w-full border p-2 rounded"
+                            className="w-full rounded-xl border border-white/10 bg-zinc-900 px-3 py-3 text-white outline-none focus:border-orange-500/70"
                         >
                             <option value="">請選擇課程名稱</option>
                             {courseOptions.map((course) => (
@@ -138,7 +125,7 @@ export default function NewGroupClassModal({ isOpen, onClose, onSuccess }: { isO
                         <select
                             value={coach}
                             onChange={(e) => setCoach(e.target.value)}
-                            className="w-full border p-2 rounded"
+                            className="w-full rounded-xl border border-white/10 bg-zinc-900 px-3 py-3 text-white outline-none focus:border-orange-500/70"
                         >
                             <option value="">請選擇教練</option>
                             {groupCoaches.map((c) => (
@@ -150,11 +137,11 @@ export default function NewGroupClassModal({ isOpen, onClose, onSuccess }: { isO
                             type="date"
                             value={date}
                             onChange={(e) => setDate(e.target.value)}
-                            className="w-full border p-2 rounded"
-                            min={new Date().toISOString().split("T")[0]}
+                            className="w-full rounded-xl border border-white/10 bg-zinc-900 px-3 py-3 text-white outline-none focus:border-orange-500/70 [color-scheme:dark]"
+                            min={dayjs().format("YYYY-MM-DD")}
                         />
 
-                        <div className="flex items-center gap-2 mt-2">
+                        <div className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] p-3 text-sm text-zinc-300">
                             <input
                                 type="checkbox"
                                 checked={repeatWeekly}
@@ -168,7 +155,7 @@ export default function NewGroupClassModal({ isOpen, onClose, onSuccess }: { isO
                                     max={12}
                                     value={repeatCount}
                                     onChange={(e) => setRepeatCount(Number(e.target.value))}
-                                    className="w-20 border p-1 rounded ml-2"
+                                    className="ml-auto w-20 rounded-lg border border-white/10 bg-zinc-900 p-2 text-white outline-none"
                                     placeholder="週數"
                                 />
                             )}
@@ -185,7 +172,7 @@ export default function NewGroupClassModal({ isOpen, onClose, onSuccess }: { isO
                                     const adjustedEnd = `${String(endHour).padStart(2, "0")}:${m === 0 ? "00" : "30"}`;
                                     setEndTime(adjustedEnd);
                                 }}
-                                className="w-full border p-2 rounded"
+                                className="w-full rounded-xl border border-white/10 bg-zinc-900 px-3 py-3 text-white outline-none focus:border-orange-500/70"
                             >
                                 <option value="">開始時間</option>
                                 {timeSlots.map((time) => (
@@ -196,7 +183,7 @@ export default function NewGroupClassModal({ isOpen, onClose, onSuccess }: { isO
                             <select
                                 value={endTime}
                                 onChange={(e) => setEndTime(e.target.value)}
-                                className="w-full border p-2 rounded"
+                                className="w-full rounded-xl border border-white/10 bg-zinc-900 px-3 py-3 text-white outline-none focus:border-orange-500/70"
                             >
                                 <option value="">結束時間</option>
                                 {timeSlots.map((time) => (
@@ -206,24 +193,22 @@ export default function NewGroupClassModal({ isOpen, onClose, onSuccess }: { isO
                         </div>
                     </div>
 
-                    <div className="flex justify-end gap-3 mt-6">
+                    <div className="mt-6 grid grid-cols-2 gap-3 border-t border-white/10 pt-4">
                         <button
                             onClick={onClose}
-                            className="px-4 py-2 rounded bg-gray-300 hover:bg-gray-400 text-black cursor-pointer"
+                            className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 font-medium text-zinc-300 transition hover:bg-white/10"
                             disabled={loading}
                         >
                             取消
                         </button>
                         <button
                             onClick={handleSubmit}
-                            className="px-4 py-2 rounded bg-orange-500 hover:bg-orange-600 text-white cursor-pointer"
+                            className="rounded-xl bg-orange-500 px-4 py-3 font-semibold text-white transition hover:-translate-y-0.5 hover:bg-orange-400 disabled:opacity-50"
                             disabled={loading}
                         >
                             {loading ? "儲存中..." : "儲存課程"}
                         </button>
                     </div>
-                </motion.div>
-            </motion.div>
-        </AnimatePresence>
+        </ModalShell>
     );
 }

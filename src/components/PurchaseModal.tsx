@@ -4,7 +4,10 @@ import { useEffect, useState, useRef, useMemo } from "react";
 import { doc, updateDoc, addDoc, collection, serverTimestamp, getDocs, query, where } from "firebase/firestore";
 import { db, auth } from "@/lib/firebase";
 import { toast } from "sonner";
-import { increment, orderBy, limit } from "firebase/firestore";
+import { increment } from "firebase/firestore";
+import Script from "next/script";
+import { CreditCard, ReceiptText, UserRound } from "lucide-react";
+import ModalShell from "./ModalShell";
 
 type Props = {
     open: boolean;
@@ -78,14 +81,17 @@ export default function PurchaseModal({ open, onClose, student }: Props) {
             try {
                 const q = query(
                     collection(db, "orders"),
-                    where("userId", "==", student.userId),
-                    where("status", "==", "unpaid"),
-                    orderBy("createdAt", "desc"),
-                    limit(1)
+                    where("assignedTrainerId", "==", auth.currentUser?.uid)
                 );
                 const snap = await getDocs(q);
-                if (!snap.empty) {
-                    const existingOrder = snap.docs[0];
+                const existingOrder = snap.docs
+                    .filter((order) => {
+                        const data = order.data();
+                        return data.userId === student.userId && data.status === "unpaid";
+                    })
+                    .sort((a, b) => (b.data().createdAt?.toMillis?.() ?? 0) - (a.data().createdAt?.toMillis?.() ?? 0))[0];
+
+                if (existingOrder) {
                     const data = existingOrder.data();
 
                     setOrderId(existingOrder.id);
@@ -142,9 +148,9 @@ export default function PurchaseModal({ open, onClose, student }: Props) {
                         ccv: { element: "#card-ccv", placeholder: "CCV" },
                     },
                     styles: {
-                        input: { color: "black", "font-size": "14px" },
-                        ".valid": { color: "green" },
-                        ".invalid": { color: "red" },
+                        input: { color: "white", "font-size": "14px" },
+                        ".valid": { color: "#86efac" },
+                        ".invalid": { color: "#fca5a5" },
                     },
                 });
 
@@ -251,19 +257,20 @@ export default function PurchaseModal({ open, onClose, student }: Props) {
     if (!open) return null;
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-40 z-50 flex items-center justify-center">
-            <div className="bg-white rounded-lg p-6 w-[90%] max-w-md shadow-lg">
-                <h2 className="text-xl font-bold text-orange-500 mb-4">
-                    購買課程：{student.userName}
-                </h2>
-                <p className="text-sm text-gray-700 mb-2">Email：{student.email}</p>
+        <>
+            <Script
+                src="https://js.tappaysdk.com/tpdirect/v5.1.0"
+                strategy="afterInteractive"
+            />
+            <ModalShell open={open} onClose={handleClose} title={`購買課程 · ${student.userName}`} description="選擇課程堂數並完成付款" icon={<CreditCard className="h-5 w-5" />} titleId="purchase-title">
+                <div className="mb-5 flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.04] p-3"><div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/5 text-zinc-400"><UserRound className="h-4 w-4" /></div><div className="min-w-0"><p className="text-xs text-zinc-500">購課學員</p><p className="truncate text-sm text-zinc-300">{student.email}</p></div></div>
 
                 <div className="mb-4">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="mb-2 flex items-center gap-2 text-sm font-medium text-zinc-300"><ReceiptText className="h-4 w-4 text-orange-400" />
                         選擇課程方案
                     </label>
                     <select
-                        className="w-full border border-gray-300 rounded px-3 py-2 text-sm text-black"
+                        className="w-full rounded-xl border border-white/10 bg-zinc-900 px-3 py-3 text-sm text-white outline-none transition focus:border-orange-500/70 focus:ring-2 focus:ring-orange-500/15"
                         value={selectedPack}
                         onChange={(e) => setSelectedPack(e.target.value as "1" | "5" | "10")}
                     >
@@ -277,26 +284,26 @@ export default function PurchaseModal({ open, onClose, student }: Props) {
                 {step === "payment" && (
                     <>
                         <div className="mb-4">
-                            <label className="block text-sm font-medium text-gray-700 mb-1">卡號</label>
-                            <div id="card-number" className="h-[44px] rounded border border-gray-300 bg-white"></div>
+                            <label className="mb-2 block text-sm font-medium text-zinc-300">卡號</label>
+                            <div id="card-number" className="h-[46px] rounded-xl border border-white/10 bg-zinc-900 px-3"></div>
                         </div>
 
                         <div className="mb-4">
-                            <label className="block text-sm font-medium text-gray-700 mb-1">到期日</label>
-                            <div id="card-expiration-date" className="h-[44px] rounded border border-gray-300 bg-white"></div>
+                            <label className="mb-2 block text-sm font-medium text-zinc-300">到期日</label>
+                            <div id="card-expiration-date" className="h-[46px] rounded-xl border border-white/10 bg-zinc-900 px-3"></div>
                         </div>
 
                         <div className="mb-4">
-                            <label className="block text-sm font-medium text-gray-700 mb-1">CCV</label>
-                            <div id="card-ccv" className="h-[44px] rounded border border-gray-300 bg-white"></div>
+                            <label className="mb-2 block text-sm font-medium text-zinc-300">CCV</label>
+                            <div id="card-ccv" className="h-[46px] rounded-xl border border-white/10 bg-zinc-900 px-3"></div>
                         </div>
                     </>
                 )}
 
-                <div className="flex justify-end space-x-2 mt-4">
+                <div className="mt-6 grid grid-cols-2 gap-3 border-t border-white/10 pt-4">
                     <button
                         onClick={handleClose}
-                        className="px-4 py-2 bg-gray-300 hover:bg-gray-400 text-black rounded"
+                        className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 font-medium text-zinc-300 transition hover:bg-white/10 hover:text-white"
                         disabled={loading}
                     >
                         取消
@@ -305,7 +312,7 @@ export default function PurchaseModal({ open, onClose, student }: Props) {
                     {step === "select" ? (
                         <button
                             onClick={handleCreateOrder}
-                            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded"
+                            className="rounded-xl bg-orange-500 px-4 py-3 font-semibold text-white transition hover:-translate-y-0.5 hover:bg-orange-400 disabled:opacity-50"
                             disabled={loading}
                         >
                             {loading ? "建立中..." : "建立訂單"}
@@ -313,14 +320,14 @@ export default function PurchaseModal({ open, onClose, student }: Props) {
                     ) : (
                         <button
                             onClick={handlePurchase}
-                            className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded"
+                            className="rounded-xl bg-orange-500 px-4 py-3 font-semibold text-white transition hover:-translate-y-0.5 hover:bg-orange-400 disabled:opacity-50"
                             disabled={loading}
                         >
                             {loading ? "處理中..." : "立即付款"}
                         </button>
                     )}
                 </div>
-            </div>
-        </div>
+            </ModalShell>
+        </>
     );
 }

@@ -1,25 +1,20 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "sonner";
-import Script from "next/script";
 import Footer from "@/components/Footer";
 
-
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
 export const metadata: Metadata = {
-  title: "FitnessWay 健身平台",
+  title: {
+    default: "FitnessWay 健身平台",
+    template: "%s | FitnessWay",
+  },
   description: "記錄體態、預約課程，打造個人專屬訓練路線",
+  openGraph: {
+    title: "FitnessWay 健身平台",
+    description: "記錄體態、預約課程，打造個人專屬訓練路線",
+    type: "website",
+    locale: "zh_TW",
+  },
 };
 
 export default function RootLayout({
@@ -28,20 +23,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-
-      <body
-        className={`min-h-screen bg-black text-white antialiased font-sans ${geistSans.variable} ${geistMono.variable}`}
-      >
+    <html lang="zh-Hant">
+      <body className="min-h-screen bg-black font-sans text-white antialiased">
         {children}
-
-        {/* TapPay */}
-        <Script
-          src="https://js.tappaysdk.com/tpdirect/v5.1.0"
-          strategy="beforeInteractive"
-          async={false}
-        />
-
         <Toaster
           position="top-center"
           toastOptions={{

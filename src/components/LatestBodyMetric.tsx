@@ -98,25 +98,25 @@ export default function LatestBodyMetric({ userId, user, refreshTrigger }: Props
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="w-full max-w-4xl mx-auto text-white"
+            className="mx-auto w-full max-w-4xl text-white"
         >
             <h3 className="text-xl font-bold text-orange-400 mb-4 text-center tracking-wide">
                 目前身體數據
             </h3>
 
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-white">
-                <div className="bg-zinc-900 border border-orange-500 rounded-xl p-4 shadow flex flex-col items-center justify-center min-h-[180px] sm:min-h-[200px] transition duration-300 hover:shadow-lg hover:scale-[1.02] hover:border-orange-300">
+            <div className="grid grid-cols-2 gap-3 text-white sm:grid-cols-4 sm:gap-4">
+                <div className="flex min-w-0 flex-col items-center justify-center rounded-xl border border-orange-500/80 bg-zinc-900/75 p-4 shadow-lg shadow-black/20 backdrop-blur-sm transition duration-300 min-h-[180px] sm:min-h-[200px] hover:-translate-y-1 hover:border-orange-300 hover:shadow-orange-500/10">
                     <Ruler className="w-12 h-12 text-orange-400 mb-2" />
                     <div className="text-sm text-orange-400 font-medium">身高</div>
                     <div className="text-2xl font-bold">{height} cm</div>
                 </div>
-                <div className="bg-zinc-900 border border-orange-500 rounded-xl p-4 shadow flex flex-col items-center justify-center min-h-[180px] sm:min-h-[200px] transition duration-300 hover:shadow-lg hover:scale-[1.02] hover:border-orange-300">
+                <div className="flex min-w-0 flex-col items-center justify-center rounded-xl border border-orange-500/80 bg-zinc-900/75 p-4 shadow-lg shadow-black/20 backdrop-blur-sm transition duration-300 min-h-[180px] sm:min-h-[200px] hover:-translate-y-1 hover:border-orange-300 hover:shadow-orange-500/10">
                     <Weight className="w-12 h-12 text-orange-400 mb-2" />
                     <div className="text-sm text-orange-400 font-medium">體重</div>
                     <div className="text-2xl font-bold">{weight} kg</div>
                 </div>
-                <div className="bg-zinc-900 border border-orange-500 rounded-xl p-4 text-center shadow flex flex-col items-center justify-center min-h-[180px] sm:min-h-[200px] transition duration-300 hover:shadow-lg hover:scale-[1.02] hover:border-orange-300">
-                    <div className="w-[70%]">
+                <div className="flex min-w-0 flex-col items-center justify-center rounded-xl border border-orange-500/80 bg-zinc-900/75 p-4 text-center shadow-lg shadow-black/20 backdrop-blur-sm transition duration-300 min-h-[180px] sm:min-h-[200px] hover:-translate-y-1 hover:border-orange-300 hover:shadow-orange-500/10">
+                    <div className="w-full max-w-[150px] px-2">
                         <CircularProgressbar
                             value={animatedBmi}
                             maxValue={40}
@@ -140,8 +140,8 @@ export default function LatestBodyMetric({ userId, user, refreshTrigger }: Props
                         {bmiLabel}
                     </div>
                 </div>
-                <div className="bg-zinc-900 border border-orange-500 rounded-xl p-4 text-center shadow flex flex-col items-center justify-center min-h-[180px] sm:min-h-[200px] transition duration-300 hover:shadow-lg hover:scale-[1.02] hover:border-orange-300">
-                    <div className="w-[70%]">
+                <div className="flex min-w-0 flex-col items-center justify-center rounded-xl border border-orange-500/80 bg-zinc-900/75 p-4 text-center shadow-lg shadow-black/20 backdrop-blur-sm transition duration-300 min-h-[180px] sm:min-h-[200px] hover:-translate-y-1 hover:border-orange-300 hover:shadow-orange-500/10">
+                    <div className="w-full max-w-[150px] px-2">
                         <CircularProgressbar
                             value={animatedFat}
                             maxValue={60}

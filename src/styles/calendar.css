@@ -1,5 +1,10 @@
 .rbc-calendar {
-    font-family: Arial, sans-serif;
+    font-family: inherit;
+}
+
+.trainer-calendar .rbc-calendar {
+    min-width: 680px;
+    color: #d4d4d8;
 }
 
 .rbc-toolbar-label {
@@ -8,26 +13,21 @@
 }
 
 .rbc-header {
-    background-color: #f97316 !important;
-    /* Tailwind orange-400 */
-    color: white !important;
+    background-color: rgba(249, 115, 22, 0.12) !important;
+    color: #fdba74 !important;
     font-weight: bold;
-    padding: 4px 0;
-    border-bottom: 1px solid #e5e7eb;
-    /* Tailwind zinc-200 */
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
 }
 
 /* 左側時間欄位的樣式強化 */
 .rbc-time-content {
-    border-top: 1px solid #e5e7eb;
-    /* Tailwind zinc-200 */
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .rbc-time-gutter {
-    background-color: #f9fafb;
-    /* Tailwind gray-50 */
-    color: #374151;
-    /* Tailwind gray-700 */
+    background-color: rgba(255, 255, 255, 0.02);
+    color: #a1a1aa;
     font-weight: 500;
     font-size: 0.875rem;
     padding-left: 3px;
@@ -35,18 +35,19 @@
 }
 
 .rbc-toolbar button {
-    color: black !important;
-    background: none !important;
-    border: 1px solid #ccc !important;
+    color: #d4d4d8 !important;
+    background: rgba(255, 255, 255, 0.04) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
     margin: 0 2px !important;
     padding: 6px 10px !important;
-    border-radius: 4px !important;
+    border-radius: 10px !important;
     cursor: pointer !important;
 }
 
 .rbc-toolbar button.rbc-active {
     background-color: #f97316 !important;
     color: white !important;
+    border-color: #f97316 !important;
 }
 
 .rbc-event {
@@ -75,7 +76,22 @@
 
 .rbc-time-header-cell,
 .rbc-timeslot-group {
-    border-color: #e2e8f0 !important;
+    border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+.trainer-calendar .rbc-day-slot .rbc-time-slot,
+.trainer-calendar .rbc-time-view,
+.trainer-calendar .rbc-time-header,
+.trainer-calendar .rbc-time-content > * + * > * {
+    border-color: rgba(255, 255, 255, 0.07) !important;
+}
+
+.trainer-calendar .rbc-today {
+    background-color: rgba(249, 115, 22, 0.07) !important;
+}
+
+.trainer-calendar .rbc-current-time-indicator {
+    background-color: #fb923c;
 }
 
 /* 自定義課表事件樣式 */

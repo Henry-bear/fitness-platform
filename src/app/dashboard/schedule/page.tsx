@@ -10,6 +10,7 @@ import NewGroupClassModal from "@/components/NewGroupClassModal";
 import { toast } from "sonner";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import dayjs from "dayjs";
+import { CalendarDays, Clock3, Plus, Trash2, Users } from "lucide-react";
 
 type GroupClass = {
     id: string;
@@ -128,15 +129,14 @@ export default function ScheduleAdminPage() {
     };
 
     useEffect(() => {
-        fetchSchedule();
-    }, []);
+        if (authLoading || roleLoading) return;
 
-    useEffect(() => {
-        if (!authLoading && !roleLoading) {
-            if (!user || role !== "admin") {
-                router.replace("/");
-            }
+        if (!user || role !== "admin") {
+            router.replace("/");
+            return;
         }
+
+        fetchSchedule();
     }, [authLoading, roleLoading, user, role, router]);
 
     if (authLoading || roleLoading || !user || role !== "admin") {
@@ -145,14 +145,14 @@ export default function ScheduleAdminPage() {
 
     return (
         <>
-            <div className="bg-white text-black p-6 rounded-md">
-                <div className="flex items-center justify-between mb-6">
-                    <h1 className="text-2xl font-bold text-orange-500">團體課程排程表</h1>
+            <div className="mx-auto max-w-6xl text-white">
+                <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+                    <div><div className="mb-2 flex items-center gap-2 text-sm font-medium text-orange-400"><CalendarDays className="h-4 w-4" />課程營運</div><h1 className="text-2xl font-bold">團體課程管理</h1><p className="mt-1 text-sm text-zinc-400">建立時段、查看預約人數與管理既有課程</p></div>
                     <button
                         onClick={() => setIsModalOpen(true)}
-                        className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded cursor-pointer"
+                        className="flex items-center justify-center gap-2 rounded-xl bg-orange-500 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-orange-950/30 transition hover:-translate-y-0.5 hover:bg-orange-400"
                     >
-                        + 新增課程
+                        <Plus className="h-4 w-4" />新增課程
                     </button>
 
                     <NewGroupClassModal
@@ -162,32 +162,17 @@ export default function ScheduleAdminPage() {
                     />
                 </div>
 
-                <table className="w-full text-sm border border-zinc-200">
-                    <thead className="bg-zinc-100">
-                        <tr>
-                            <th className="p-2 text-left">課程名稱</th>
-                            <th className="p-2 text-left">教練</th>
-                            <th className="p-2 text-left">日期</th>
-                            <th className="p-2 text-left">時間</th>
-                            <th className="p-2 text-center">預約人數</th>
-                            <th className="p-2 text-center">操作</th>
-                        </tr>
-                    </thead>
-                    <tbody>
+                <div className="mb-5 flex items-center gap-3 rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-zinc-400"><CalendarDays className="h-5 w-5 text-orange-400" /><span>共 {scheduleList.length} 堂課程</span><span className="ml-auto text-xs">{expiredClasses.length} 堂已過期</span></div>
+                {scheduleList.length === 0 ? (
+                    <div className="flex min-h-[280px] flex-col items-center justify-center rounded-3xl border border-white/10 bg-zinc-950/55 text-center backdrop-blur-md"><div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white/5 text-zinc-600"><CalendarDays className="h-6 w-6" /></div><p className="mt-4 font-medium text-zinc-300">目前沒有團體課程</p><p className="mt-1 text-sm text-zinc-600">點擊新增課程建立第一個時段</p></div>
+                ) : (
+                    <div className="grid gap-3">
                         {scheduleList.map((item) => (
-                            <tr key={item.id} className="border-t border-zinc-200 hover:bg-zinc-50">
-                                <td className="text-zinc-800 p-2 font-medium">{item.title}</td>
-                                <td className="text-zinc-800 p-2">{item.coach}</td>
-                                <td className="text-zinc-800 p-2">
-                                    {dayjs(item.date instanceof Timestamp ? item.date.toDate() : item.date).format("YYYY/MM/DD")}
-                                </td>
-                                <td className="text-zinc-800 p-2">
-                                    {item.startTime} - {item.endTime}
-                                </td>
-                                <td className="text-center text-zinc-800 p-2">
-                                    {item.bookingCount} 人
-                                </td>
-                                <td className="text-center p-2">
+                            <article key={item.id} className="grid gap-4 rounded-2xl border border-white/10 bg-zinc-950/55 p-4 shadow-lg shadow-black/20 backdrop-blur-md transition hover:border-white/20 lg:grid-cols-[1.2fr_1fr_1fr_0.7fr_auto] lg:items-center">
+                                <div><p className="font-semibold text-white">{item.title}</p><p className="mt-1 text-xs text-zinc-500">{item.coach} 教練</p></div>
+                                <div className="flex items-center gap-2 text-sm text-zinc-400"><CalendarDays className="h-4 w-4 text-orange-400" />{dayjs(item.date instanceof Timestamp ? item.date.toDate() : item.date).format("YYYY/MM/DD")}</div>
+                                <div className="flex items-center gap-2 text-sm text-zinc-400"><Clock3 className="h-4 w-4 text-orange-400" />{item.startTime} - {item.endTime}</div>
+                                <div className="flex items-center gap-2 text-sm text-zinc-400"><Users className="h-4 w-4 text-orange-400" />{item.bookingCount} 人</div>
                                     <button
                                         onClick={async () => {
                                             setSelectedId(item.id);
@@ -208,15 +193,14 @@ export default function ScheduleAdminPage() {
                                             );
                                             setConfirmOpen(true);
                                         }}
-                                        className="px-3 py-1 rounded border border-red-400 text-red-500 hover:bg-red-100 transition font-medium text-sm cursor-pointer"
+                                        className="flex items-center justify-center gap-1.5 rounded-xl border border-red-400/15 bg-red-400/[0.05] px-3 py-2 text-sm font-medium text-red-300 transition hover:border-red-400/30 hover:bg-red-400/10"
                                     >
-                                        刪除
+                                        <Trash2 className="h-4 w-4" />刪除
                                     </button>
-                                </td>
-                            </tr>
+                            </article>
                         ))}
-                    </tbody>
-                </table>
+                    </div>
+                )}
             </div>
 
             <ConfirmDialog

@@ -1,7 +1,7 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { Dumbbell, Ruler } from "lucide-react";
+import { Dumbbell, Plus, Ruler } from "lucide-react";
+import ModalShell from "./ModalShell";
 
 type Props = {
     onClose: () => void;
@@ -11,22 +11,14 @@ type Props = {
 
 export default function RecordSelectorModal({ onClose, onSelectWorkout, onSelectMetric }: Props) {
     return (
-        <div className="fixed inset-0 bg-black/90 z-[999] flex items-center justify-center">
-            <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                transition={{ duration: 0.25 }}
-                className="bg-transparent w-[90%] max-w-sm text-white"
-            >
-                <h2 className="text-xl font-bold text-orange-400 mb-6 text-center">選擇項目</h2>
-                <div className="flex justify-center gap-4 mb-6">
+        <ModalShell open onClose={onClose} title="新增一筆紀錄" description="選擇這次要記錄的內容" icon={<Plus className="h-5 w-5" />} titleId="record-selector-title" maxWidth="sm">
+                <div className="grid grid-cols-2 gap-3">
                     <button
                         onClick={() => {
                             onSelectWorkout?.();
                             onClose();
                         }}
-                        className="flex flex-col items-center justify-center w-36 h-32 bg-orange-500 hover:bg-orange-600 rounded-2xl shadow transition"
+                        className="flex h-32 flex-col items-center justify-center rounded-2xl border border-orange-400/20 bg-orange-400/10 transition hover:-translate-y-0.5 hover:border-orange-400/40 hover:bg-orange-400/15"
                     >
                         <Dumbbell className="w-8 h-8 text-white mb-2" />
                         <span className="text-white font-semibold">訓練記錄</span>
@@ -36,21 +28,20 @@ export default function RecordSelectorModal({ onClose, onSelectWorkout, onSelect
                             onSelectMetric?.();
                             onClose();
                         }}
-                        className="flex flex-col items-center justify-center w-36 h-32 bg-yellow-500 hover:bg-yellow-600 text-white rounded-2xl shadow transition"
+                        className="flex h-32 flex-col items-center justify-center rounded-2xl border border-amber-400/20 bg-amber-400/10 text-white transition hover:-translate-y-0.5 hover:border-amber-400/40 hover:bg-amber-400/15"
                     >
                         <Ruler className="w-8 h-8 text-white mb-2" />
                         <span className="font-semibold">數值記錄</span>
                     </button>
                 </div>
-                <div className="text-center">
+                <div className="mt-4 text-center">
                     <button
                         onClick={onClose}
-                        className="px-4 py-2 bg-zinc-600 hover:bg-zinc-700 text-white rounded"
+                        className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-zinc-300 transition hover:bg-white/10 hover:text-white"
                     >
                         取消
                     </button>
                 </div>
-            </motion.div>
-        </div>
+        </ModalShell>
     );
 }

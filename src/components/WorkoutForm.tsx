@@ -6,6 +6,8 @@ import { db } from "@/lib/firebase";
 import { User } from "firebase/auth";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
+import { CalendarDays, ChevronDown, Dumbbell, Plus, Save, Trash2, X } from "lucide-react";
+import ModalPortal from "./ModalPortal";
 
 const partOptions = {
     腿部: [
@@ -111,19 +113,34 @@ export default function WorkoutForm({ user, onClose, onSaved }: Props) {
     };
 
     return (
-        <div className="fixed inset-0 z-[999] bg-black/60 flex justify-center items-center overflow-y-auto">
+        <ModalPortal>
+        <div
+            className="fixed inset-0 z-[999] flex items-center justify-center overflow-y-auto bg-black/75 p-4 backdrop-blur-md"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="workout-form-title"
+        >
             <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                transition={{ duration: 0.25 }}
-                className="bg-zinc-900 text-white p-6 rounded shadow-lg w-[90%] max-w-md"
+                initial={{ opacity: 0, y: 18, scale: 0.96 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 12, scale: 0.97 }}
+                transition={{ duration: 0.22 }}
+                className="relative max-h-[92vh] w-full max-w-2xl overflow-y-auto rounded-3xl border border-white/10 bg-zinc-950/95 p-5 text-white shadow-2xl shadow-black/60 sm:p-6"
             >
-                <h2 className="text-xl font-bold text-orange-500 border-b border-zinc-700 pb-2 mb-4">
-                    新增訓練紀錄
-                </h2>
+                <div aria-hidden="true" className="absolute -right-16 -top-16 h-48 w-48 rounded-full bg-orange-500/15 blur-3xl" />
+                <button type="button" onClick={onClose} aria-label="關閉訓練紀錄視窗" className="absolute right-4 top-4 z-10 rounded-full border border-white/10 bg-white/5 p-2 text-zinc-400 transition hover:bg-white/10 hover:text-white">
+                    <X className="h-4 w-4" />
+                </button>
 
-                <form onSubmit={handleSubmit}>
+                <div className="relative mb-6 flex items-center gap-3">
+                    <div className="rounded-2xl bg-orange-500/15 p-3 text-orange-400"><Dumbbell className="h-6 w-6" /></div>
+                    <div>
+                        <h2 id="workout-form-title" className="text-xl font-bold text-white">新增訓練紀錄</h2>
+                        <p className="mt-0.5 text-sm text-zinc-400">記下重量、組數與次數</p>
+                    </div>
+                </div>
+
+                <form onSubmit={handleSubmit} className="relative">
                     {exercises.map((exercise, index) => {
                         const isExpanded = expandedIndex === index;
                         const currentOptions = exercise.part && exercise.part in partOptions ? partOptions[exercise.part as PartKey] : [];
@@ -133,28 +150,26 @@ export default function WorkoutForm({ user, onClose, onSaved }: Props) {
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ duration: 0.4 }}
-                                className="mb-3 border border-zinc-700 rounded">
-                                <button
-                                    type="button"
-                                    className="w-full px-3 py-2 text-left flex justify-between items-center bg-zinc-800 hover:bg-zinc-700 rounded-t"
-                                    onClick={() => setExpandedIndex(isExpanded ? null : index)}
-                                >
-                                    <span>
+                                layout
+                                className="mb-3 overflow-hidden rounded-2xl border border-white/10 bg-white/[0.035] transition hover:border-white/20">
+                                <div className="flex items-center gap-2 p-2">
+                                    <button type="button" className="flex min-w-0 flex-1 items-center justify-between rounded-xl px-2 py-2 text-left hover:bg-white/5" onClick={() => setExpandedIndex(isExpanded ? null : index)}>
+                                    <span className="truncate text-sm font-medium text-zinc-200">
                                         訓練 #{index + 1}：
                                         {exercise.type ? ` ${exercise.type}（${exercise.weight}kg x ${exercise.sets}組 x ${exercise.reps}下）` : " 尚未填寫"}
                                     </span>
+                                    <motion.span animate={{ rotate: isExpanded ? 180 : 0 }}><ChevronDown className="h-4 w-4 text-zinc-500" /></motion.span>
+                                    </button>
                                     {exercises.length > 1 && (
-                                        <span className="text-red-400 text-sm" onClick={(e) => { e.stopPropagation(); removeExercise(index); }}>
-                                            刪除
-                                        </span>
+                                        <button type="button" aria-label={`刪除訓練 ${index + 1}`} className="rounded-xl p-2.5 text-zinc-500 transition hover:bg-red-500/10 hover:text-red-400" onClick={() => removeExercise(index)}><Trash2 className="h-4 w-4" /></button>
                                     )}
-                                </button>
+                                </div>
                                 {isExpanded && (
-                                    <div className="px-3 py-2 space-y-2">
+                                    <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="space-y-3 border-t border-white/10 px-3 pb-4 pt-3">
                                         <select
                                             value={exercise.part}
                                             onChange={(e) => handleChange(index, "part", e.target.value as Exercise["part"])}
-                                            className="w-full px-3 py-2 rounded border border-orange-500 bg-black text-white"
+                                            className="w-full rounded-xl border border-white/10 bg-zinc-900 px-3 py-3 text-white outline-none transition focus:border-orange-500/70 focus:ring-2 focus:ring-orange-500/15"
                                         >
                                             <option value="">請選擇部位</option>
                                             {Object.keys(partOptions).map((p) => (
@@ -166,7 +181,7 @@ export default function WorkoutForm({ user, onClose, onSaved }: Props) {
                                             value={exercise.type}
                                             onChange={(e) => handleChange(index, "type", e.target.value)}
                                             disabled={!exercise.part}
-                                            className="w-full px-3 py-2 rounded border border-orange-500 bg-black text-white"
+                                            className="w-full rounded-xl border border-white/10 bg-zinc-900 px-3 py-3 text-white outline-none transition focus:border-orange-500/70 focus:ring-2 focus:ring-orange-500/15 disabled:opacity-40"
                                         >
                                             <option value="">請選擇項目</option>
                                             {currentOptions.map((t) => (
@@ -174,32 +189,33 @@ export default function WorkoutForm({ user, onClose, onSaved }: Props) {
                                             ))}
                                         </select>
 
-                                        <input type="number" min="1" value={exercise.weight} onChange={(e) => handleChange(index, "weight", e.target.value)} placeholder="重量（kg）" className="w-full px-3 py-2 rounded border border-orange-500 bg-black text-white placeholder:text-zinc-500" />
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <input type="number" min="1" value={exercise.sets} onChange={(e) => handleChange(index, "sets", e.target.value)} placeholder="組數" className="w-full px-3 py-2 rounded border border-orange-500 bg-black text-white placeholder:text-zinc-500" />
-                                            <input type="number" min="1" value={exercise.reps} onChange={(e) => handleChange(index, "reps", e.target.value)} placeholder="次數" className="w-full px-3 py-2 rounded border border-orange-500 bg-black text-white placeholder:text-zinc-500" />
+                                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                                            <input type="number" min="1" value={exercise.weight} onChange={(e) => handleChange(index, "weight", e.target.value)} placeholder="重量 kg" className="w-full rounded-xl border border-white/10 bg-zinc-900 px-3 py-3 text-white outline-none transition placeholder:text-zinc-600 focus:border-orange-500/70 focus:ring-2 focus:ring-orange-500/15" />
+                                            <input type="number" min="1" value={exercise.sets} onChange={(e) => handleChange(index, "sets", e.target.value)} placeholder="組數" className="w-full rounded-xl border border-white/10 bg-zinc-900 px-3 py-3 text-white outline-none transition placeholder:text-zinc-600 focus:border-orange-500/70 focus:ring-2 focus:ring-orange-500/15" />
+                                            <input type="number" min="1" value={exercise.reps} onChange={(e) => handleChange(index, "reps", e.target.value)} placeholder="次數" className="w-full rounded-xl border border-white/10 bg-zinc-900 px-3 py-3 text-white outline-none transition placeholder:text-zinc-600 focus:border-orange-500/70 focus:ring-2 focus:ring-orange-500/15" />
                                         </div>
-                                    </div>
+                                    </motion.div>
                                 )}
                             </motion.div>
                         );
                     })}
 
-                    <button type="button" onClick={addExercise} className="w-full mb-4 px-3 py-2 text-sm border border-orange-500 text-orange-400 hover:bg-orange-500 hover:text-white rounded">
-                        + 新增訓練項目
+                    <button type="button" onClick={addExercise} className="mb-4 flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-orange-500/60 px-3 py-3 text-sm font-medium text-orange-400 transition hover:border-orange-400 hover:bg-orange-500/10">
+                        <Plus className="h-4 w-4" />新增訓練項目
                     </button>
 
                     <div className="mb-4">
-                        <label className="block text-sm mb-1">訓練日期</label>
-                        <input type="date" value={date} onChange={(e) => setDate(e.target.value)} max={today} className="w-full px-3 py-2 rounded border border-orange-500 bg-black text-white" />
+                        <label htmlFor="workout-date" className="mb-2 flex items-center gap-2 text-sm font-medium text-zinc-300"><CalendarDays className="h-4 w-4 text-orange-400" />訓練日期</label>
+                        <input id="workout-date" type="date" value={date} onChange={(e) => setDate(e.target.value)} max={today} className="w-full rounded-xl border border-white/10 bg-zinc-900 px-3 py-3 text-white outline-none transition focus:border-orange-500/70 focus:ring-2 focus:ring-orange-500/15" />
                     </div>
 
-                    <div className="flex justify-end space-x-2">
-                        <button type="button" onClick={onClose} className="px-4 py-2 bg-zinc-600 hover:bg-zinc-700 text-white rounded">取消</button>
-                        <button type="submit" className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded">儲存</button>
+                    <div className="grid grid-cols-2 gap-3 border-t border-white/10 pt-4">
+                        <button type="button" onClick={onClose} className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 font-medium text-zinc-300 transition hover:bg-white/10 hover:text-white">取消</button>
+                        <button type="submit" className="flex items-center justify-center gap-2 rounded-xl bg-orange-500 px-4 py-3 font-semibold text-white shadow-lg shadow-orange-950/40 transition hover:-translate-y-0.5 hover:bg-orange-400"><Save className="h-4 w-4" />儲存</button>
                     </div>
                 </form>
             </motion.div>
         </div>
+        </ModalPortal>
     );
 }

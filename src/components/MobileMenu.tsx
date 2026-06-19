@@ -1,12 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import styles from "./MobileMenu.module.css";
+import { useState } from "react";
 import RecordSelectorModal from "./RecordSelectorModal";
-import { useCustomClaimRole } from "@/app/hooks/useCustomClaimRole";
-import { auth } from "@/lib/firebase";
-import { useAuthState } from "react-firebase-hooks/auth";
+import { motion } from "framer-motion";
 
 type Props = {
     onAddWorkout?: () => void;
@@ -15,18 +12,35 @@ type Props = {
     onLogin?: () => void;
     onRegister?: () => void;
     user?: { displayName: string | null };
+    role?: string | null;
     closeMenu: () => void;
-    menuOpen: boolean;
-    isVisible: boolean;
-    className?: string;
 };
 
 type MenuItem = {
     label: string;
     onClick?: () => void;
     link?: string;
-    delay: number;
     variant?: "solid" | "outline" | "yellow" | "orange" | "indigo" | "dashboard";
+};
+
+const menuVariants = {
+    hidden: { opacity: 0, y: -12 },
+    visible: {
+        opacity: 1,
+        y: 0,
+        transition: { duration: 0.22, staggerChildren: 0.06 },
+    },
+    exit: {
+        opacity: 0,
+        y: -8,
+        transition: { duration: 0.18, staggerChildren: 0.03, staggerDirection: -1 },
+    },
+};
+
+const itemVariants = {
+    hidden: { opacity: 0, y: -8 },
+    visible: { opacity: 1, y: 0 },
+    exit: { opacity: 0, y: -6 },
 };
 
 export default function MobileMenu({
@@ -36,38 +50,20 @@ export default function MobileMenu({
     onLogin,
     onRegister,
     user,
+    role,
     closeMenu,
-    menuOpen,
-    className = "",
 }: Props) {
-    const [isVisible, setIsVisible] = useState(false);
-    const [isLeaving, setIsLeaving] = useState(false);
     const [showRecordModal, setShowRecordModal] = useState(false);
-    const [firebaseUser] = useAuthState(auth);
-    const { role } = useCustomClaimRole(firebaseUser ?? null);
-
-    useEffect(() => {
-        if (menuOpen) {
-            setIsVisible(true);
-            setIsLeaving(false);
-        } else {
-            setIsLeaving(true);
-            setTimeout(() => {
-                setIsVisible(false);
-                setIsLeaving(false);
-            }, 600);
-        }
-    }, [menuOpen]);
 
     let items: MenuItem[] = [];
 
     if (user) {
         items = [
-            { label: "體驗教練課程", link: "/experience", delay: 0, variant: "yellow" },
-            { label: "團體課程", link: "/group-classes", delay: 100, variant: "orange" },
-            { label: "TDEE計算", link: "/tdee", delay: 200, variant: "indigo" },
-            { label: "記錄+", onClick: () => setShowRecordModal(true), delay: 300 },
-            { label: user.displayName || "訪客", link: "/member", delay: 400 },
+            { label: "體驗教練課程", link: "/experience", variant: "yellow" },
+            { label: "團體課程", link: "/group-classes", variant: "orange" },
+            { label: "TDEE計算", link: "/tdee", variant: "indigo" },
+            { label: "記錄+", onClick: () => setShowRecordModal(true) },
+            { label: user.displayName || "訪客", link: "/member" },
         ];
 
         // admin / groupCoach / personalTrainer 才加入後台選單
@@ -75,75 +71,63 @@ export default function MobileMenu({
             items.push({
                 label: "後台管理",
                 link: "/dashboard",
-                delay: 500,
                 variant: "dashboard",
             });
         }
 
-        items.push({ label: "登出", onClick: onLogout, delay: 650 });
+        items.push({ label: "登出", onClick: onLogout });
     } else {
         items = [
-            { label: "登入", onClick: onLogin, delay: 0, variant: "outline" },
-            { label: "註冊", onClick: onRegister, delay: 100, variant: "solid" },
+            { label: "登入", onClick: onLogin, variant: "outline" },
+            { label: "註冊", onClick: onRegister, variant: "solid" },
         ];
     }
 
     return (
         <>
-            <div
-                className={`absolute top-full left-0 w-full bg-zinc-900 bg-opacity-95 z-40 px-6 py-4 shadow-md transition-all duration-300 ${className}`}
+            <motion.nav
+                id="mobile-menu"
+                aria-label="手機版主選單"
+                variants={menuVariants}
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+                className="absolute left-0 top-full z-40 w-full border-b border-white/10 bg-zinc-950/95 px-6 py-5 shadow-2xl shadow-black/40 backdrop-blur-xl"
             >
-                {isVisible && (
-                    <div className="flex flex-col items-center gap-3">
-                        {items.map((item, index) => {
-                            const style = {
-                                animationDelay: `${item.delay}ms`,
-                            } as React.CSSProperties;
-
-                            const animationClass = isLeaving
-                                ? styles["menu-item-leave"]
-                                : styles["menu-item"];
-
+                <div className="flex flex-col items-center gap-3">
+                    {items.map((item) => {
                             const isYellow = item.variant === "yellow";
                             const isOutline = item.variant === "outline";
                             const isOrange = item.variant === "orange";
                             const isIndigo = item.variant === "indigo";
                             const isDashboard = item.variant === "dashboard";
 
-                            const buttonClass = `${animationClass} w-full max-w-[200px] px-4 py-2 rounded text-sm font-medium ${isYellow
-                                ? "bg-yellow-400 text-black font-bold hover:bg-yellow-500"
+                            const itemClass = `w-full max-w-[240px] rounded-xl border px-4 py-2.5 text-center text-sm font-semibold transition ${isYellow
+                                ? "border-amber-400/20 bg-amber-400/[0.07] text-amber-300 hover:border-amber-400/40 hover:bg-amber-400/[0.12]"
                                 : isOutline
-                                    ? "border border-orange-400 text-orange-400 bg-transparent hover:bg-orange-500 hover:text-white"
+                                    ? "border-white/10 bg-white/[0.04] text-zinc-200 hover:border-orange-500/40 hover:text-orange-300"
                                     : isOrange
-                                        ? "bg-orange-400 text-white hover:bg-orange-500"
+                                        ? "border-orange-400/20 bg-orange-400/[0.07] text-orange-300 hover:border-orange-400/40 hover:bg-orange-400/[0.12]"
                                         : isIndigo
-                                            ? "bg-indigo-600 text-white hover:bg-indigo-700"
+                                            ? "border-sky-400/20 bg-sky-400/[0.07] text-sky-300 hover:border-sky-400/40 hover:bg-sky-400/[0.12]"
                                             : isDashboard
-                                                ? "bg-black text-orange-400 border border-orange-400 hover:bg-orange-500 hover:text-white transition"
-                                                : "bg-orange-500 text-white hover:bg-orange-600"
+                                                ? "border-zinc-600 bg-zinc-900/70 text-zinc-200 hover:border-orange-500/50 hover:bg-orange-500/10 hover:text-orange-300"
+                                                : "border-orange-500 bg-orange-500 text-white hover:bg-orange-400"
                                 }`;
 
-                            return item.link ? (
+                            const buttonClass = item.label === "登出"
+                                ? "w-full max-w-[240px] rounded-xl border border-red-400/15 bg-red-400/[0.05] px-4 py-2.5 text-sm font-medium text-red-300 transition hover:border-red-400/30 hover:bg-red-400/10"
+                                : itemClass;
+
+                        return <motion.div key={item.label} variants={itemVariants} className="flex w-full justify-center">
+                            {item.link ? (
                                 <Link
                                     href={item.link}
-                                    key={index}
                                     onClick={closeMenu}
-                                    style={style}
                                     className={
                                         item.label === (user?.displayName || "訪客")
-                                            ? `${animationClass} w-full max-w-[200px] text-white text-center hover:underline`
-                                            : `${animationClass} w-full max-w-[200px] px-4 py-2 rounded text-sm font-medium text-center ${isYellow
-                                                ? "bg-yellow-400 text-black font-bold hover:bg-yellow-500"
-                                                : isOutline
-                                                    ? "border border-orange-400 text-orange-400 bg-transparent hover:bg-orange-500 hover:text-white"
-                                                    : isOrange
-                                                        ? "bg-orange-400 text-white hover:bg-orange-500"
-                                                        : isIndigo
-                                                            ? "bg-indigo-600 text-white hover:bg-indigo-700"
-                                                            : isDashboard
-                                                                ? "bg-black text-orange-400 border border-orange-400 hover:bg-orange-500 hover:text-white transition"
-                                                                : "bg-orange-500 text-white hover:bg-orange-600"
-                                            }`
+                                            ? "w-full max-w-[240px] rounded-xl border border-white/10 bg-white/[0.04] px-4 py-2.5 text-center text-sm font-semibold text-white transition hover:bg-white/[0.08]"
+                                            : itemClass
                                     }
 
                                 >
@@ -151,23 +135,21 @@ export default function MobileMenu({
                                 </Link>
                             ) : (
                                 <button
-                                    key={index}
                                     onClick={() => {
                                         item.onClick?.();
                                         if (item.label !== "記錄+") {
                                             closeMenu();
                                         }
                                     }}
-                                    style={style}
                                     className={buttonClass}
                                 >
                                     {item.label}
                                 </button>
-                            );
-                        })}
-                    </div>
-                )}
-            </div>
+                            )}
+                        </motion.div>;
+                    })}
+                </div>
+            </motion.nav>
 
             {showRecordModal && (
                 <RecordSelectorModal

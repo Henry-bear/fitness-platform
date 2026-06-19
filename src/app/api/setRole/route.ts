@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import admin from "@/lib/firebase-admin";
 
+const validRoles = ["member", "groupCoach", "personalTrainer", "admin"] as const;
+
 export async function POST(req: Request) {
     try {
         const body = await req.json();
@@ -8,6 +10,14 @@ export async function POST(req: Request) {
 
         if (!uid || !role) {
             return NextResponse.json({ error: "缺少 uid 或 role" }, { status: 400 });
+        }
+
+        if (
+            typeof uid !== "string" ||
+            typeof role !== "string" ||
+            !validRoles.includes(role as (typeof validRoles)[number])
+        ) {
+            return NextResponse.json({ error: "uid 或 role 格式不合法" }, { status: 400 });
         }
 
         // 從 headers 拿 token
@@ -25,11 +35,31 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: "沒有權限執行此操作" }, { status: 403 });
         }
 
-        // 寫入 custom claims
-        await admin.auth().setCustomUserClaims(uid, { role });
+
+        if (decoded.uid === uid) {
+            return NextResponse.json({ error: "不能變更自己的角色" }, { status: 400 });
+        }
+
+        const targetUser = await admin.auth().getUser(uid);
+        const existingClaims = targetUser.customClaims ?? {};
+
+        if (existingClaims.role === "admin") {
+            return NextResponse.json({ error: "不能變更其他管理員的角色" }, { status: 400 });
+        }
+
+        const updatedClaims = { ...existingClaims, role };
+        await admin.auth().setCustomUserClaims(uid, updatedClaims);
+
+        try {
+            await admin.firestore().doc(`users/${uid}`).update({ role });
+        } catch (error) {
+            await admin.auth().setCustomUserClaims(uid, existingClaims);
+            throw error;
+        }
 
         return NextResponse.json({ message: "Role 設定成功" });
     } catch (err) {
-        return NextResponse.json({ error: (err as Error).message }, { status: 500 });
+        console.error("更新使用者角色失敗", err);
+        return NextResponse.json({ error: "更新角色失敗" }, { status: 500 });
     }
 }

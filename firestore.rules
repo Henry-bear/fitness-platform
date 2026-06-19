@@ -4,8 +4,10 @@ service cloud.firestore {
   
   	// 訂單規則   
     match /orders/{orderId} {
-  allow create: if request.auth != null && 
-                request.auth.token.role in ["personalTrainer", "admin"];
+  allow create: if request.auth != null &&
+                request.auth.token.role in ["personalTrainer", "admin"] &&
+                (request.auth.token.role == "admin" ||
+                 request.resource.data.assignedTrainerId == request.auth.uid);
 
   allow get: if request.auth != null &&
     (
@@ -14,11 +16,19 @@ service cloud.firestore {
       resource.data.assignedTrainerId == request.auth.uid
     );
 
-  allow list: if request.auth != null && 
-    request.auth.token.role in ["personalTrainer", "admin"];
+  allow list: if request.auth != null && (
+    request.auth.token.role == "admin" ||
+    (request.auth.token.role == "personalTrainer" &&
+     resource.data.assignedTrainerId == request.auth.uid)
+  );
 
-  allow update: if request.auth != null &&
-    request.auth.token.role in ["personalTrainer", "admin"];
+  allow update: if request.auth != null && (
+    request.auth.token.role == "admin" ||
+    (request.auth.token.role == "personalTrainer" &&
+     resource.data.assignedTrainerId == request.auth.uid &&
+     request.resource.data.diff(resource.data).affectedKeys()
+       .hasOnly(["status", "tappayPrime", "paidAt"]))
+  );
 
   allow delete: if false;
 }
@@ -37,7 +47,9 @@ service cloud.firestore {
     );
 
  allow list: if request.auth != null && (
-    request.auth.token.role in ["admin", "personalTrainer"] ||
+    request.auth.token.role == "admin" ||
+    (request.auth.token.role == "personalTrainer" &&
+     resource.data.assignedTrainerId == request.auth.uid) ||
     // 讓一般會員可以查詢自己的資料（前端 where 使用）
     resource.data.userId == request.auth.uid
 );
@@ -65,20 +77,26 @@ service cloud.firestore {
     // 私人教練課程排程紀錄（全域 collection）
 match /privateSchedule/{docId} {
   allow create: if request.auth != null &&
-                request.auth.token.role == "personalTrainer";
+                request.auth.token.role == "personalTrainer" &&
+                request.resource.data.trainerId == request.auth.uid;
                 
   allow get, list: if request.auth != null && (
-    // 教練可以看全部
-    request.auth.token.role == "personalTrainer" ||
+    // 教練只能查看自己的排程
+    (request.auth.token.role == "personalTrainer" &&
+     resource.data.trainerId == request.auth.uid) ||
     // 學生可以看自己的預約
     request.auth.uid == resource.data.studentId
   );
 
   allow update: if request.auth != null &&
-                request.auth.token.role == "personalTrainer";
+                request.auth.token.role == "personalTrainer" &&
+                resource.data.trainerId == request.auth.uid &&
+                request.resource.data.diff(resource.data).affectedKeys()
+                  .hasOnly(["isAttended"]);
 
   allow delete: if request.auth != null &&
-                request.auth.token.role == "personalTrainer";
+                request.auth.token.role == "personalTrainer" &&
+                resource.data.trainerId == request.auth.uid;
 }
 
     match /groupBookings/{docId} {
@@ -102,7 +120,8 @@ match /privateSchedule/{docId} {
     (
       request.auth.uid == userId || // 本人
       request.auth.token.role == "admin" ||
-      request.auth.token.role == "personalTrainer" ||
+      (request.auth.token.role == "personalTrainer" &&
+       resource.data.assignedTrainerId == request.auth.uid) ||
       // 會員可以讀取被指派的教練資訊
       resource.data.role == "personalTrainer"
     );
@@ -115,7 +134,9 @@ match /privateSchedule/{docId} {
         !(("role" in request.resource.data) && request.resource.data.role != resource.data.role))
       // 新增：教練可更新他被指派的學生
       || (request.auth.token.role == "personalTrainer" &&
-          resource.data.assignedTrainerId == request.auth.uid)
+          resource.data.assignedTrainerId == request.auth.uid &&
+          request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(["isFormalMember", "assignedTrainerId", "remainingSessions", "totalPurchasedSessions"]))
       || request.auth.token.role == "admin"
     );
 

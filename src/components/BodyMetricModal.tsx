@@ -5,6 +5,8 @@ import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
+import { Activity, Percent, Ruler, Weight, X } from "lucide-react";
+import ModalPortal from "./ModalPortal";
 
 
 
@@ -50,67 +52,111 @@ export default function BodyMetricModal({ userId, onClose, onSaved }: Props) {
     };
 
     return (
-        <div className="fixed inset-0 z-[999] bg-black/60 flex justify-center items-center">
+        <ModalPortal>
+        <div
+            className="fixed inset-0 z-[999] flex items-center justify-center bg-black/75 p-4 backdrop-blur-md"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="body-metric-title"
+        >
             <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                transition={{ duration: 0.25 }}
-                className="bg-zinc-900 text-white p-6 rounded shadow-lg w-[90%] max-w-md"
+                initial={{ opacity: 0, y: 18, scale: 0.96 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 12, scale: 0.97 }}
+                transition={{ duration: 0.22 }}
+                className="relative w-full max-w-md overflow-hidden rounded-3xl border border-white/10 bg-zinc-950/90 p-6 text-white shadow-2xl shadow-black/60"
             >
-                <h2 className="text-xl font-bold mb-4 text-orange-500">新增身體數值</h2>
-                <form onSubmit={handleSubmit} className="space-y-4">
+                <div aria-hidden="true" className="absolute -right-16 -top-16 h-44 w-44 rounded-full bg-orange-500/15 blur-3xl" />
+                <button
+                    type="button"
+                    onClick={onClose}
+                    aria-label="關閉身體數值視窗"
+                    className="absolute right-4 top-4 z-10 rounded-full border border-white/10 bg-white/5 p-2 text-zinc-400 transition hover:bg-white/10 hover:text-white"
+                >
+                    <X className="h-4 w-4" />
+                </button>
 
+                <div className="relative mb-6 flex items-center gap-3">
+                    <div className="rounded-2xl bg-orange-500/15 p-3 text-orange-400">
+                        <Activity className="h-6 w-6" />
+                    </div>
                     <div>
-                        <label className="block text-sm font-medium mb-1">身高 (cm)</label>
+                        <h2 id="body-metric-title" className="text-xl font-bold text-white">新增身體數值</h2>
+                        <p className="mt-0.5 text-sm text-zinc-400">記錄今天，看看長期變化</p>
+                    </div>
+                </div>
+
+                <form onSubmit={handleSubmit} className="relative space-y-3">
+
+                    <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-3 transition focus-within:border-orange-500/70 focus-within:bg-orange-500/[0.04]">
+                        <label htmlFor="metric-height" className="mb-2 flex items-center gap-2 text-sm font-medium text-zinc-300">
+                            <Ruler className="h-4 w-4 text-orange-400" />身高
+                        </label>
+                        <div className="flex items-center gap-3">
                         <input
+                            id="metric-height"
                             type="number"
                             min="130"
-                            step="0"
-                            placeholder="請輸入身高 (cm)"
-                            className="w-full px-3 py-2 rounded border border-orange-500 bg-zinc-900 text-white placeholder:text-zinc-500"
+                            step="0.1"
+                            placeholder="175"
+                            className="min-w-0 flex-1 bg-transparent text-2xl font-semibold text-white outline-none placeholder:text-zinc-700"
                             value={height}
                             onChange={(e) => setHeight(e.target.value)}
                         />
+                        <span className="text-sm font-medium text-zinc-500">cm</span>
+                        </div>
                     </div>
 
-                    <div>
-                        <label className="block text-sm font-medium mb-1">體重 (kg)</label>
+                    <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-3 transition focus-within:border-orange-500/70 focus-within:bg-orange-500/[0.04]">
+                        <label htmlFor="metric-weight" className="mb-2 flex items-center gap-2 text-sm font-medium text-zinc-300">
+                            <Weight className="h-4 w-4 text-orange-400" />體重
+                        </label>
+                        <div className="flex items-center gap-3">
                         <input
+                            id="metric-weight"
                             type="number"
-                            placeholder="請輸入體重 (kg)"
+                            placeholder="70"
                             min="5"
-                            step="0"
-                            className="w-full px-3 py-2 rounded border border-orange-500 bg-zinc-900 text-white placeholder:text-zinc-500"
+                            step="0.1"
+                            className="min-w-0 flex-1 bg-transparent text-2xl font-semibold text-white outline-none placeholder:text-zinc-700"
                             value={weight}
                             onChange={(e) => setWeight(e.target.value)}
                         />
+                        <span className="text-sm font-medium text-zinc-500">kg</span>
+                        </div>
                     </div>
 
-                    <div>
-                        <label className="block text-sm font-medium mb-1">體脂 (%)</label>
+                    <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-3 transition focus-within:border-orange-500/70 focus-within:bg-orange-500/[0.04]">
+                        <label htmlFor="metric-fat" className="mb-2 flex items-center gap-2 text-sm font-medium text-zinc-300">
+                            <Percent className="h-4 w-4 text-orange-400" />體脂
+                        </label>
+                        <div className="flex items-center gap-3">
                         <input
+                            id="metric-fat"
                             type="number"
-                            placeholder="請輸入體脂 (%)"
+                            placeholder="20"
                             min="0"
-                            step="0"
-                            className="w-full px-3 py-2 rounded border border-orange-500 bg-zinc-900 text-white placeholder:text-zinc-500"
+                            max="100"
+                            step="0.1"
+                            className="min-w-0 flex-1 bg-transparent text-2xl font-semibold text-white outline-none placeholder:text-zinc-700"
                             value={bodyFat}
                             onChange={(e) => setBodyFat(e.target.value)}
                         />
+                        <span className="text-sm font-medium text-zinc-500">%</span>
+                        </div>
                     </div>
 
-                    <div className="flex justify-end space-x-3 pt-2">
+                    <div className="grid grid-cols-2 gap-3 pt-3">
                         <button
                             type="button"
                             onClick={onClose}
-                            className="px-4 py-2 bg-zinc-700 hover:bg-zinc-600 text-white rounded"
+                            className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 font-medium text-zinc-300 transition hover:bg-white/10 hover:text-white"
                         >
                             取消
                         </button>
                         <button
                             type="submit"
-                            className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded"
+                            className="rounded-xl bg-orange-500 px-4 py-3 font-semibold text-white shadow-lg shadow-orange-950/40 transition hover:-translate-y-0.5 hover:bg-orange-400"
                         >
                             儲存
                         </button>
@@ -118,5 +164,6 @@ export default function BodyMetricModal({ userId, onClose, onSaved }: Props) {
                 </form>
             </motion.div>
         </div >
+        </ModalPortal>
     );
 }

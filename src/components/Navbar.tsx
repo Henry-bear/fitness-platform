@@ -6,8 +6,9 @@ import { signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { toast } from "sonner";
 import MobileMenu from "./MobileMenu";
-import { Menu } from "lucide-react";
 import RecordSelectorModal from "./RecordSelectorModal";
+import { AnimatePresence, motion } from "framer-motion";
+import { CalendarDays, Calculator, LayoutDashboard, LogIn, LogOut, Plus, Sparkles, UserPlus, UserRound } from "lucide-react";
 
 
 type Props = {
@@ -39,22 +40,11 @@ export default function Navbar({
     setMenuOpen
 }: Props) {
     const router = useRouter();
-    const [isVisible, setIsVisible] = useState(false);
-    const [animationClass, setAnimationClass] = useState("");
     const [showRecordSelector, setShowRecordSelector] = useState(false);
+    const roleLabel = role === "admin" ? "管理員" : role === "groupCoach" ? "團課教練" : role === "personalTrainer" ? "私人教練" : "會員";
 
     const toggleMenu = () => {
-        if (menuOpen) {
-            setAnimationClass("animate-slide-up");
-            setTimeout(() => {
-                setMenuOpen(false);
-                setIsVisible(false);
-            }, 400); // 動畫結束
-        } else {
-            setMenuOpen(true);
-            setAnimationClass("animate-slide-down");
-            setTimeout(() => setIsVisible(true), 100); // 等 menu 滑出再淡入按鈕
-        }
+        setMenuOpen(!menuOpen);
     };
 
     const handleLogout = async () => {
@@ -67,7 +57,7 @@ export default function Navbar({
     return (
         <>
             <div className="relative z-50">
-                <div className="w-full px-4 py-4 bg-zinc-900 flex justify-between items-center">
+                <div className="flex w-full items-center justify-between border-b border-white/[0.06] bg-zinc-950/92 px-4 py-3 backdrop-blur-xl">
                     {/* Logo */}
                     <Link
                         href="/"
@@ -77,7 +67,7 @@ export default function Navbar({
                     </Link>
 
                     {/* 桌機版功能區 */}
-                    <div className="hidden sm:flex items-center gap-4">
+                    <div className="hidden items-center gap-2 sm:flex">
                         {authLoading ? (
                             <div className="flex items-center space-x-2">
                                 <div className="w-5 h-5 border-2 border-orange-400 border-t-transparent rounded-full animate-spin"></div>
@@ -87,23 +77,23 @@ export default function Navbar({
                             <>
                                 <Link
                                     href="/experience"
-                                    className="px-4 py-2 bg-yellow-400 text-black rounded hover:bg-yellow-500 transition font-bold cursor-pointer"
+                                    className="flex items-center gap-1.5 rounded-lg border border-amber-400/20 bg-amber-400/[0.07] px-3 py-2 text-sm font-semibold text-amber-300 transition hover:border-amber-400/40 hover:bg-amber-400/[0.12]"
 
                                 >
-                                    體驗教練課程
+                                    <Sparkles className="h-4 w-4" />體驗課程
                                 </Link>
 
                                 <Link
                                     href="/group-classes"
-                                    className="px-4 py-2 bg-orange-400 text-white rounded hover:bg-orange-500 transition font-bold cursor-pointer"
+                                    className="flex items-center gap-1.5 rounded-lg border border-orange-400/20 bg-orange-400/[0.07] px-3 py-2 text-sm font-semibold text-orange-300 transition hover:border-orange-400/40 hover:bg-orange-400/[0.12]"
                                 >
-                                    團體課程
+                                    <CalendarDays className="h-4 w-4" />團體課程
                                 </Link>
                                 <Link
                                     href="/tdee"
-                                    className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 transition font-bold cursor-pointer"
+                                    className="flex items-center gap-1.5 rounded-lg border border-sky-400/20 bg-sky-400/[0.07] px-3 py-2 text-sm font-semibold text-sky-300 transition hover:border-sky-400/40 hover:bg-sky-400/[0.12]"
                                 >
-                                    TDEE 計算
+                                    <Calculator className="h-4 w-4" />TDEE
                                 </Link>
                                 {showRecordSelector && (
                                     <RecordSelectorModal
@@ -115,47 +105,51 @@ export default function Navbar({
 
                                 <button
                                     onClick={() => setShowRecordSelector(true)}
-                                    className="px-4 py-2 bg-orange-500 text-white rounded hover:bg-orange-600 cursor-pointer font-bold"
+                                    className="flex items-center gap-1.5 rounded-lg border border-orange-400/20 bg-orange-400/[0.07] px-3 py-2 text-sm font-semibold text-orange-300 transition hover:border-orange-400/40 hover:bg-orange-400/[0.12]"
                                 >
-                                    記錄＋
+                                    <Plus className="h-4 w-4" />記錄
                                 </button>
 
                                 <Link
                                     href="/member"
-                                    className="text-white font-medium hover:underline"
+                                    className="group flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] py-1.5 pl-1.5 pr-3 transition hover:border-white/20 hover:bg-white/[0.08]"
                                 >
-                                    {user.displayName || "訪客"}
+                                    <span className="flex h-8 w-8 items-center justify-center rounded-full bg-orange-500/15 text-orange-400 transition group-hover:bg-orange-500/25"><UserRound className="h-4 w-4" /></span>
+                                    <span className="flex flex-col text-left leading-tight">
+                                        <span className="max-w-24 truncate text-sm font-medium text-white">{user.displayName || "訪客"}</span>
+                                        <span className="text-[10px] font-medium tracking-wide text-zinc-500">{roleLabel}</span>
+                                    </span>
                                 </Link>
 
                                 {(role === "admin" || role === "groupCoach" || role === "personalTrainer") && (
                                     <Link
                                         href="/dashboard"
-                                        className="px-4 py-2 bg-black text-orange-400 border border-orange-400 rounded hover:bg-orange-500 hover:text-white transition"
+                                        className="flex items-center gap-2 rounded-lg border border-zinc-600 bg-zinc-950/70 px-4 py-2 text-sm font-semibold text-zinc-200 transition hover:border-orange-500/60 hover:bg-orange-500/10 hover:text-orange-300 hover:shadow-[0_0_20px_rgba(249,115,22,0.12)]"
                                     >
-                                        後台管理
+                                        <LayoutDashboard className="h-4 w-4" />後台管理
                                     </Link>
                                 )}
 
                                 <button
                                     onClick={handleLogout}
-                                    className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded cursor-pointer"
+                                    className="flex items-center gap-1.5 rounded-lg border border-red-400/15 bg-red-400/[0.05] px-3 py-2 text-sm font-medium text-red-300 transition hover:border-red-400/30 hover:bg-red-400/10"
                                 >
-                                    登出
+                                    <LogOut className="h-4 w-4" />登出
                                 </button>
                             </>
                         ) : (
                             <>
                                 <button
                                     onClick={onLogin}
-                                    className="px-4 py-2 border border-orange-400 text-orange-400 hover:bg-orange-500 hover:text-white rounded transition cursor-pointer"
+                                    className="flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.04] px-4 py-2 text-sm font-semibold text-zinc-200 transition hover:border-orange-500/40 hover:text-orange-300"
                                 >
-                                    登入
+                                    <LogIn className="h-4 w-4" />登入
                                 </button>
                                 <button
                                     onClick={onRegister}
-                                    className="px-4 py-2 border border-transparent bg-orange-500 text-white rounded hover:bg-orange-600 transition cursor-pointer"
+                                    className="flex items-center gap-1.5 rounded-lg bg-orange-500 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-orange-950/30 transition hover:bg-orange-400"
                                 >
-                                    註冊
+                                    <UserPlus className="h-4 w-4" />註冊
                                 </button>
                             </>
                         )}
@@ -166,9 +160,26 @@ export default function Navbar({
                         {!authLoading && (
                             <button
                                 onClick={toggleMenu}
-                                className="w-12 h-12 flex items-center justify-center text-white transition-transform duration-300 hover:scale-110"
+                                className="flex h-12 w-12 flex-col items-center justify-center gap-[5px] text-white"
+                                aria-label={menuOpen ? "關閉主選單" : "開啟主選單"}
+                                aria-expanded={menuOpen}
+                                aria-controls="mobile-menu"
                             >
-                                <Menu size={32} />
+                                <motion.span
+                                    className="block h-0.5 w-7 rounded-full bg-current"
+                                    animate={menuOpen ? { y: 7, rotate: 45 } : { y: 0, rotate: 0 }}
+                                    transition={{ type: "spring", stiffness: 420, damping: 28 }}
+                                />
+                                <motion.span
+                                    className="block h-0.5 w-7 rounded-full bg-current"
+                                    animate={menuOpen ? { opacity: 0, scaleX: 0.3 } : { opacity: 1, scaleX: 1 }}
+                                    transition={{ duration: 0.16 }}
+                                />
+                                <motion.span
+                                    className="block h-0.5 w-7 rounded-full bg-current"
+                                    animate={menuOpen ? { y: -7, rotate: -45 } : { y: 0, rotate: 0 }}
+                                    transition={{ type: "spring", stiffness: 420, damping: 28 }}
+                                />
                             </button>
                         )}
                     </div>
@@ -176,20 +187,20 @@ export default function Navbar({
                 </div>
 
                 {/* MobileMenu 選單浮動顯示 */}
-                {menuOpen && !authLoading && (
-                    <MobileMenu
-                        className={`transition-all duration-300 ${animationClass}`}
-                        onAddWorkout={onAddWorkout}
-                        onAddMetric={onAddMetric}
-                        onLogout={handleLogout}
-                        onLogin={onLogin}
-                        onRegister={onRegister}
-                        user={user}
-                        closeMenu={toggleMenu}
-                        isVisible={isVisible}
-                        menuOpen={menuOpen}
-                    />
-                )}
+                <AnimatePresence>
+                    {menuOpen && !authLoading && (
+                        <MobileMenu
+                            onAddWorkout={onAddWorkout}
+                            onAddMetric={onAddMetric}
+                            onLogout={handleLogout}
+                            onLogin={onLogin}
+                            onRegister={onRegister}
+                            user={user}
+                            role={role}
+                            closeMenu={() => setMenuOpen(false)}
+                        />
+                    )}
+                </AnimatePresence>
             </div>
         </>
     );

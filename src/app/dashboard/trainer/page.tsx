@@ -16,6 +16,7 @@ import { collection, getDocs, getDoc, doc, updateDoc } from "firebase/firestore"
 import ConfirmDialog from "@/components/ConfirmDialog";
 import AttendanceDialog from "@/components/AttendanceDialog";
 import { SlotInfo } from "react-big-calendar";
+import { CalendarDays, CheckCircle2, MousePointerClick, Users } from "lucide-react";
 
 // 型別：事件格式
 type TrainerEvent = RBCEvent & {
@@ -75,14 +76,9 @@ export default function TrainerDashboardPage() {
     // 讀取學生姓名函式
     const getStudentName = async (studentId: string, studentType: "normal" | "experience"): Promise<string> => {
         try {
-            if (studentType === "experience") {
-                const expSnap = await getDocs(collection(db, "experienceBookings"));
-                const matched = expSnap.docs.find(d => d.data().userId === studentId);
-                return matched?.data().userName || "體驗學生";
-            } else {
-                const userDoc = await getDoc(doc(db, "users", studentId));
-                return userDoc.exists() ? userDoc.data().name || "學生" : "學生";
-            }
+            const userDoc = await getDoc(doc(db, "users", studentId));
+            const fallback = studentType === "experience" ? "體驗學生" : "學生";
+            return userDoc.exists() ? userDoc.data().name || fallback : fallback;
         } catch (err) {
             console.warn("取得學生名稱失敗", err);
             return "未知學生";
@@ -94,13 +90,19 @@ export default function TrainerDashboardPage() {
         const fetchStudents = async () => {
             if (!user?.uid) return;
 
-            const userSnap = await getDocs(collection(db, "users"));
-            const bookingSnap = await getDocs(collection(db, "experienceBookings"));
+            if (role !== "personalTrainer") return;
+
+            const userSnap = await getDocs(query(
+                collection(db, "users"),
+                where("assignedTrainerId", "==", user.uid),
+                where("isFormalMember", "==", true)
+            ));
+            const bookingSnap = await getDocs(query(
+                collection(db, "experienceBookings"),
+                where("assignedTrainerId", "==", user.uid)
+            ));
 
             const normal = userSnap.docs
-                .filter(doc =>
-                    doc.data().assignedTrainerId === user.uid &&
-                    doc.data().isFormalMember === true)
                 .map(doc => ({
                     id: doc.id,
                     name: doc.data().name || "未命名",
@@ -112,7 +114,6 @@ export default function TrainerDashboardPage() {
 
             const experience = bookingSnap.docs
                 .filter(doc =>
-                    doc.data().assignedTrainerId === user.uid &&
                     ["assigned", "contacted", "attended"].includes(doc.data().status) &&
                     !formalIds.has(doc.data().userId) // 過濾已升級的
                 )
@@ -244,7 +245,9 @@ export default function TrainerDashboardPage() {
         const start = new Date(selectedSlot.start);
         const end = new Date(start.getTime() + 60 * 60 * 1000); // +1 小時
 
-        const dateStr = start.toISOString().split("T")[0];
+        // Calendar slots are local time. Converting to ISO first would shift
+        // early-morning selections to the previous UTC date in Asia/Taipei.
+        const dateStr = moment(start).format("YYYY-MM-DD");
         const startTime = start.toTimeString().slice(0, 5);
         const endTime = end.toTimeString().slice(0, 5);
 
@@ -347,11 +350,29 @@ export default function TrainerDashboardPage() {
     // loading 中先不渲染
     if (loading || roleLoading || !user || role !== "personalTrainer") return null;
 
-    return (
-        <div className="p-6">
-            <h1 className="text-2xl font-bold text-orange-500 mb-4">我的教練課表</h1>
+    const upcomingCount = events.filter((event) => event.start && event.start >= new Date()).length;
+    const attendedCount = events.filter((event) => event.isAttended).length;
 
-            <div className="bg-white p-4 rounded shadow border border-orange-300 overflow-x-auto">
+    return (
+        <div className="mx-auto max-w-7xl text-white">
+            <div className="mb-6">
+                <div className="mb-2 flex items-center gap-2 text-sm font-medium text-orange-400"><CalendarDays className="h-4 w-4" />教練工作台</div>
+                <h1 className="text-2xl font-bold">私人教練課表</h1>
+                <p className="mt-1 text-sm text-zinc-400">安排學生時段、完成簽到並追蹤授課進度</p>
+            </div>
+
+            <div className="mb-5 grid gap-3 sm:grid-cols-3">
+                <div className="rounded-2xl border border-white/10 bg-zinc-950/55 p-4 backdrop-blur-md"><div className="flex items-center gap-2 text-xs text-zinc-500"><CalendarDays className="h-4 w-4 text-orange-400" />待授課</div><p className="mt-2 text-2xl font-bold">{upcomingCount}<span className="ml-1 text-sm font-normal text-zinc-500">堂</span></p></div>
+                <div className="rounded-2xl border border-white/10 bg-zinc-950/55 p-4 backdrop-blur-md"><div className="flex items-center gap-2 text-xs text-zinc-500"><CheckCircle2 className="h-4 w-4 text-emerald-400" />已完成</div><p className="mt-2 text-2xl font-bold">{attendedCount}<span className="ml-1 text-sm font-normal text-zinc-500">堂</span></p></div>
+                <div className="rounded-2xl border border-white/10 bg-zinc-950/55 p-4 backdrop-blur-md"><div className="flex items-center gap-2 text-xs text-zinc-500"><Users className="h-4 w-4 text-blue-400" />可排課學生</div><p className="mt-2 text-2xl font-bold">{students.length}<span className="ml-1 text-sm font-normal text-zinc-500">位</span></p></div>
+            </div>
+
+            <div className="mb-4 flex items-start gap-3 rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-zinc-400">
+                <MousePointerClick className="mt-0.5 h-4 w-4 shrink-0 text-orange-400" />
+                <span>點選空白時段建立預約；點選既有課程可進行簽到或取消。</span>
+            </div>
+
+            <div className="trainer-calendar overflow-x-auto rounded-3xl border border-white/10 bg-zinc-950/65 p-3 shadow-2xl shadow-black/25 backdrop-blur-md sm:p-5">
                 <Calendar
                     key={events.length}
                     localizer={localizer}
@@ -363,7 +384,7 @@ export default function TrainerDashboardPage() {
                     date={currentDate}
                     onNavigate={(date) => setCurrentDate(date)}
                     views={["week", "day"]}
-                    style={{ height: 600 }}
+                    style={{ height: 650 }}
                     toolbar={true}
                     popup={true}
                     longPressThreshold={100}

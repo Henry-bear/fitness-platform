@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { auth } from "@/lib/firebase";
 import { useCustomClaimRole } from "@/app/hooks/useCustomClaimRole";
 import CoachScheduleList from "./CoachScheduleList";
+import { CalendarDays } from "lucide-react";
 
 
 export default function CoachPage() {
@@ -26,10 +27,14 @@ export default function CoachPage() {
     }
 
     return (
-        <div className="p-6">
-            <h1 className="text-2xl font-bold text-orange-500 mb-4">
-                我的課程
-            </h1>
+        <div className="mx-auto max-w-6xl text-white">
+            <div className="mb-6">
+                <div className="mb-2 flex items-center gap-2 text-sm font-medium text-orange-400">
+                    <CalendarDays className="h-4 w-4" />教練工作台
+                </div>
+                <h1 className="text-2xl font-bold">我的團體課程</h1>
+                <p className="mt-1 text-sm text-zinc-400">查看授課時段與即時預約人數</p>
+            </div>
             <CoachScheduleList user={user} />
         </div>
     );

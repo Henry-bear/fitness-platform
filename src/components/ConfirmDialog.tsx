@@ -1,5 +1,8 @@
 "use client";
 
+import { CircleAlert } from "lucide-react";
+import ModalShell from "./ModalShell";
+
 interface ConfirmDialogProps {
     open: boolean;
     title?: string;
@@ -8,6 +11,7 @@ interface ConfirmDialogProps {
     onConfirm: () => void;
     confirmText?: string;
     cancelText?: string;
+    tone?: "primary" | "danger";
 }
 
 export default function ConfirmDialog({
@@ -18,29 +22,27 @@ export default function ConfirmDialog({
     onConfirm,
     confirmText = "確定",
     cancelText = "取消",
+    tone = "danger",
 }: ConfirmDialogProps) {
     if (!open) return null;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-            <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-sm">
-                <h2 className="text-lg font-semibold mb-3 text-zinc-800">{title}</h2>
-                <p className="text-sm text-zinc-700 mb-5">{message}</p>
-                <div className="flex justify-end space-x-3">
+        <ModalShell open={open} onClose={onCancel} title={title} icon={<CircleAlert className="h-5 w-5" />} titleId="confirm-dialog-title" maxWidth="sm">
+                <p className="text-sm leading-6 text-zinc-400">{message}</p>
+                <div className="mt-6 grid grid-cols-2 gap-3 border-t border-white/10 pt-4">
                     <button
                         onClick={onCancel}
-                        className="px-4 py-1 rounded text-sm bg-zinc-300 text-zinc-700 hover:bg-zinc-400 cursor-pointer"
+                        className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-medium text-zinc-300 transition hover:bg-white/10 hover:text-white"
                     >
                         {cancelText}
                     </button>
                     <button
                         onClick={onConfirm}
-                        className="px-4 py-1 rounded text-sm bg-red-500 text-white hover:bg-red-600 cursor-pointer"
+                        className={`rounded-xl px-4 py-3 text-sm font-semibold text-white transition ${tone === "danger" ? "bg-red-500 hover:bg-red-400" : "bg-orange-500 hover:bg-orange-400"}`}
                     >
                         {confirmText}
                     </button>
                 </div>
-            </div>
-        </div>
+        </ModalShell>
     );
 }

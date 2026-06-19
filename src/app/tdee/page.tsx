@@ -9,6 +9,7 @@ import Navbar from "@/components/Navbar";
 import WorkoutForm from "@/components/WorkoutForm";
 import BodyMetricModal from "@/components/BodyMetricModal";
 import TDEECalculator from "@/components/TDEECalculator";
+import AmbientBackground from "@/components/AmbientBackground";
 
 export default function TDEEPage() {
     const [user, setUser] = useState<User | null>(null);
@@ -42,7 +43,8 @@ export default function TDEEPage() {
     }
 
     return (
-        <div className="min-h-screen bg-black">
+        <div className="relative isolate min-h-screen overflow-hidden bg-[#070809]">
+            <AmbientBackground variant="tdee" />
             <Navbar
                 user={user ? { displayName: user.displayName } : undefined}
                 setUser={setUser}
@@ -62,10 +64,8 @@ export default function TDEEPage() {
                 <BodyMetricModal userId={user.uid} onClose={() => setShowMetricModal(false)} onSaved={() => { }} />
             )}
 
-            <main className="max-w-3xl mx-auto px-4 py-10">
-                <div className="bg-zinc-900 rounded-lg shadow-md p-6 text-white">
-                    <TDEECalculator />
-                </div>
+            <main className="relative z-10 mx-auto max-w-5xl px-4 py-14">
+                <TDEECalculator />
             </main>
         </div>
     );

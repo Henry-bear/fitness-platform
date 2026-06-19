@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { SlotInfo } from "react-big-calendar";
+import { CalendarPlus, Clock3 } from "lucide-react";
+import ModalShell from "@/components/ModalShell";
 
 // Props mode: "experience" | "normal"
 type Student = {
@@ -32,21 +34,16 @@ export default function BookingModal({ open, onClose, onConfirm, students, slotI
     const formattedTime = `${slotInfo.start.toLocaleDateString()} ${slotInfo.start.toLocaleTimeString()} - ${slotInfo.end.toLocaleTimeString()}`;
 
     return (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-            <div className="bg-white p-4 sm:p-6 rounded shadow-md w-[90vw] max-w-md mx-auto">
-                <h2 className="text-xl font-bold text-orange-500 mb-4">
-                    建立預約
-                </h2>
-
-                <p className="mb-2 text-gray-800">預約時間：{formattedTime}</p>
+        <ModalShell open={open} onClose={onClose} title="建立私人教練預約" description="選擇這個時段要安排的學生" icon={<CalendarPlus className="h-5 w-5" />} titleId="trainer-booking-title">
+                <p className="mb-5 flex items-start gap-2 rounded-2xl border border-white/10 bg-white/[0.04] p-3 text-sm text-zinc-300"><Clock3 className="mt-0.5 h-4 w-4 shrink-0 text-orange-400" />{formattedTime}</p>
 
                 {students.length === 0 ? (
-                    <p className="text-red-600">目前尚無可預約的學生</p>
+                    <p className="rounded-xl border border-red-400/20 bg-red-400/10 p-3 text-sm text-red-300">目前尚無可預約的學生</p>
                 ) : (
                     <select
                         value={selectedStudent}
                         onChange={(e) => setSelectedStudent(e.target.value)}
-                        className="w-full p-2 border border-gray-300 rounded mb-4 text-black"
+                        className="mb-4 w-full rounded-xl border border-white/10 bg-zinc-900 px-3 py-3 text-white outline-none transition focus:border-orange-500/70 focus:ring-2 focus:ring-orange-500/15"
                     >
                         <optgroup label="正式學員">
                             {students.filter(s => s.type === "normal").map((s) => (
@@ -65,10 +62,10 @@ export default function BookingModal({ open, onClose, onConfirm, students, slotI
                     </select>
                 )}
 
-                <div className="flex justify-end gap-2">
+                <div className="mt-6 grid grid-cols-2 gap-3 border-t border-white/10 pt-4">
                     <button
                         onClick={onClose}
-                        className="px-4 py-2 rounded bg-gray-300 text-gray-800 hover:bg-gray-400"
+                        className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 font-medium text-zinc-300 transition hover:bg-white/10 hover:text-white"
                     >
                         取消
                     </button>
@@ -79,13 +76,12 @@ export default function BookingModal({ open, onClose, onConfirm, students, slotI
                                 onConfirm(student.id, student.type)
                             };
                         }}
-                        className="px-4 py-2 rounded bg-orange-500 text-white hover:bg-orange-600"
+                        className="rounded-xl bg-orange-500 px-4 py-3 font-semibold text-white transition hover:-translate-y-0.5 hover:bg-orange-400 disabled:opacity-50"
                         disabled={students.length === 0}
                     >
                         確認預約
                     </button>
                 </div>
-            </div>
-        </div>
+        </ModalShell>
     );
 }

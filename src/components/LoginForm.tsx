@@ -43,28 +43,29 @@ export default function LoginForm() {
         }
     };
     return (
-        <form onSubmit={handleSubmit} className="max-w-md mx-auto mt-12 p-6 bg-zinc-900 rounded shadow text-white">
-            <h2 className="text-2xl font-bold mb-6 text-center text-orange-500">會員登入</h2>
+        <form onSubmit={handleSubmit} className="space-y-4 text-white">
             {/* Email 欄位 */}
-            <div className="mb-4">
-                <label className="block text-sm mb-1">Email</label>
+            <div>
+                <label htmlFor="login-email" className="mb-2 block text-sm font-medium text-zinc-300">Email</label>
                 <input
+                    id="login-email"
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full px-3 py-2 rounded bg-zinc-800 text-white border border-zinc-700"
+                    className="w-full rounded-xl border border-white/10 bg-zinc-900 px-3 py-3 text-white outline-none transition focus:border-orange-500/70 focus:ring-2 focus:ring-orange-500/15"
                     required
                 />
             </div>
 
             {/* 密碼欄位 */}
-            <div className="mb-6">
-                <label className="block text-sm mb-1">密碼</label>
+            <div>
+                <label htmlFor="login-password" className="mb-2 block text-sm font-medium text-zinc-300">密碼</label>
                 <input
+                    id="login-password"
                     type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full px-3 py-2 rounded bg-zinc-800 text-white border border-zinc-700"
+                    className="w-full rounded-xl border border-white/10 bg-zinc-900 px-3 py-3 text-white outline-none transition focus:border-orange-500/70 focus:ring-2 focus:ring-orange-500/15"
                     required
                 />
             </div>
@@ -72,7 +73,7 @@ export default function LoginForm() {
             {/* 登入按鈕 */}
             <button
                 type="submit"
-                className="w-full bg-orange-500 text-white py-2 rounded hover:bg-orange-600 transition disabled:opacity-50 cursor-pointer"
+                className="mt-2 w-full rounded-xl bg-orange-500 px-4 py-3 font-semibold text-white shadow-lg shadow-orange-950/40 transition hover:-translate-y-0.5 hover:bg-orange-400 disabled:translate-y-0 disabled:opacity-50"
                 disabled={loading}
             >
                 {loading ? "登入中..." : "登入"}
