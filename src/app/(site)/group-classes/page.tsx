@@ -1,9 +1,8 @@
 "use client";
 import { useEffect, useState } from "react";
-import { auth, db } from "@/lib/firebase";
+import { db } from "@/lib/firebase";
 import { useRouter } from "next/navigation";
 import { collection, getDocs, serverTimestamp, Timestamp, query, where, doc, deleteDoc, setDoc } from "firebase/firestore";
-import { onAuthStateChanged, User } from "firebase/auth";
 import dayjs from "dayjs";
 import isBetween from "dayjs/plugin/isBetween";
 dayjs.extend(isBetween);
@@ -16,6 +15,8 @@ import AmbientBackground from "@/components/AmbientBackground";
 import { AnimatePresence, motion } from "framer-motion";
 import { CalendarDays, Clock3, UserRound } from "lucide-react";
 import ConfirmDialog from "@/components/ConfirmDialog";
+import { useAuth } from "@/components/AuthProvider";
+import AuthStateScreen from "@/components/AuthStateScreen";
 
 // 類型定義
 type GroupClass = {
@@ -39,9 +40,8 @@ const weekdayMap: { [key: string]: string } = {
 };
 
 export default function GroupClassesPage() {
-    const [user, setUser] = useState<User | null>(null);
+    const { user, loading: authLoading, error: authError, retry: retryAuth } = useAuth();
     const [classes, setClasses] = useState<GroupClass[]>([]);
-    const [authLoading, setAuthLoading] = useState(true);
     const router = useRouter();
     const { role, loading: roleLoading } = useCustomClaimRole(user);
     const [showWorkoutModal, setShowWorkoutModal] = useState(false);
@@ -67,19 +67,9 @@ export default function GroupClassesPage() {
         }
     }, [user]);
 
-    // 登入驗證
     useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
-            if (!firebaseUser) {
-                router.push("/") // 導回首頁
-                return;
-            }
-            setUser(firebaseUser);
-            setAuthLoading(false); // 登入成功設定 loading false
-        });
-
-        return () => unsubscribe();
-    }, [router]);
+        if (!authLoading && !authError && !user) router.replace("/");
+    }, [authError, authLoading, router, user]);
 
     // 抓取課表資料
     useEffect(() => {
@@ -161,20 +151,14 @@ export default function GroupClassesPage() {
     const selectedDayClasses = getDayClasses(selectedDay);
 
     // loading 畫面
-    if (authLoading || roleLoading) {
-        return (
-            <div className="min-h-screen bg-black text-orange-400 flex justify-center items-center">
-                <div className="animate-spin w-6 h-6 border-4 border-orange-500 border-t-transparent rounded-full"></div>
-                <span className="ml-3 text-lg">驗證中...</span>
-            </div>
-        );
-    }
+    if (authLoading || roleLoading) return <AuthStateScreen />;
+    if (authError) return <AuthStateScreen error={authError} onRetry={retryAuth} />;
+    if (!user) return <AuthStateScreen message="正在返回首頁..." />;
 
     return (
         <>
             <Navbar
                 user={user ? { displayName: user.displayName } : undefined}
-                setUser={setUser}
                 authLoading={authLoading}
                 role={role}
                 roleLoading={roleLoading}

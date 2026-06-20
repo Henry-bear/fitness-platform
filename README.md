@@ -116,7 +116,7 @@ FitnessWay 是一個為健身人群打造的網站平台，依照不同角色（
 
 ### 🧪 Demo 帳號
 
-- 管理員：admin@msn.com / admin123
+- 管理員帳號不提供預設帳密，請透過 Firebase Authentication 建立帳號並設定管理員權限
 - 團課教練：test001@gmail.com / 123456
 - 私人教練：test002@gmail.com / 12345678
 

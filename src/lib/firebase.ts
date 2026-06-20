@@ -17,7 +17,10 @@ const firebaseConfig = {
 const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
 
 const appCheckSiteKey = process.env.NEXT_PUBLIC_RECAPTCHA_ENTERPRISE_SITE_KEY;
-if (typeof window !== "undefined" && appCheckSiteKey) {
+const isLocalDevelopment = typeof window !== "undefined" &&
+    ["localhost", "127.0.0.1", "::1"].includes(window.location.hostname);
+
+if (typeof window !== "undefined" && appCheckSiteKey && !isLocalDevelopment) {
     const appCheckWindow = window as typeof window & { __fitnesswayAppCheckInitialized?: boolean };
     if (!appCheckWindow.__fitnesswayAppCheckInitialized) {
         initializeAppCheck(app, {

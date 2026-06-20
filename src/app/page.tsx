@@ -1,8 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { onAuthStateChanged, User } from "firebase/auth";
-import { auth } from "@/lib/firebase";
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -13,29 +11,20 @@ import LoginModal from "@/components/LoginModal";
 import BodyMetricModal from "@/components/BodyMetricModal";
 import WorkoutForm from "@/components/WorkoutForm";
 import { useCustomClaimRole } from "./hooks/useCustomClaimRole";
+import { useAuth } from "@/components/AuthProvider";
 
 
 
 export default function Home() {
-  const [user, setUser] = useState<User | null>(null);
+  const { user, loading: authLoading } = useAuth();
   const [showRegister, setShowRegister] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
   const [showMetricModal, setShowMetricModal] = useState(false);
   const [showWorkoutModal, setShowWorkoutModal] = useState(false);
-  const [authLoading, setAuthLoading] = useState(true);
   const [, setRefreshTrigger] = useState(Date.now());
   const { role, loading: roleLoading } = useCustomClaimRole(user ?? null);
   const [menuOpen, setMenuOpen] = useState(false);
   const router = useRouter();
-
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
-      setUser(firebaseUser);
-      setAuthLoading(false);
-    });
-
-    return () => unsubscribe();
-  }, []);
 
   const handleRefresh = () => {
     setRefreshTrigger(Date.now());
@@ -95,7 +84,6 @@ export default function Home() {
           user={user ? { displayName: user.displayName } : undefined}
           onLogin={() => setShowLogin(true)}
           onRegister={() => setShowRegister(true)}
-          setUser={setUser}
           onAddMetric={() => setShowMetricModal(true)}
           onAddWorkout={() => setShowWorkoutModal(true)}
           role={role}

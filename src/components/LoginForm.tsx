@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { auth, db } from "@/lib/firebase";
-import { signInWithEmailAndPassword, signOut } from "firebase/auth";
+import { sendPasswordResetEmail, signInWithEmailAndPassword, signOut } from "firebase/auth";
 import { browserLocalPersistence, setPersistence } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import { isValidEmail, normalizeEmail } from "@/lib/validation";
@@ -18,6 +18,31 @@ export default function LoginForm() {
 
     // UI 狀態
     const [loading, setLoading] = useState(false);
+    const [resetLoading, setResetLoading] = useState(false);
+
+    const handlePasswordReset = async () => {
+        const cleanEmail = normalizeEmail(email);
+        if (!isValidEmail(cleanEmail)) {
+            toast.error("請先輸入有效的 Email");
+            return;
+        }
+
+        setResetLoading(true);
+        try {
+            auth.languageCode = "zh-TW";
+            await sendPasswordResetEmail(auth, cleanEmail);
+            toast.success("若此 Email 已註冊，密碼重設信將寄到信箱");
+        } catch (error: unknown) {
+            const code = (error as { code?: string }).code;
+            if (code === "auth/user-not-found") {
+                toast.success("若此 Email 已註冊，密碼重設信將寄到信箱");
+            } else {
+                toast.error("目前無法寄送重設信，請稍後再試");
+            }
+        } finally {
+            setResetLoading(false);
+        }
+    };
 
     // 表單處理函式
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -73,7 +98,12 @@ export default function LoginForm() {
 
             {/* 密碼欄位 */}
             <div>
-                <label htmlFor="login-password" className="mb-2 block text-sm font-medium text-zinc-300">密碼</label>
+                <div className="mb-2 flex items-center justify-between gap-3">
+                    <label htmlFor="login-password" className="block text-sm font-medium text-zinc-300">密碼</label>
+                    <button type="button" onClick={handlePasswordReset} disabled={loading || resetLoading} className="text-xs font-medium text-orange-400 transition hover:text-orange-300 disabled:opacity-50">
+                        {resetLoading ? "寄送中..." : "忘記密碼？"}
+                    </button>
+                </div>
                 <input
                     id="login-password"
                     type="password"
@@ -89,7 +119,7 @@ export default function LoginForm() {
             <button
                 type="submit"
                 className="mt-2 w-full rounded-xl bg-orange-500 px-4 py-3 font-semibold text-white shadow-lg shadow-orange-950/40 transition hover:-translate-y-0.5 hover:bg-orange-400 disabled:translate-y-0 disabled:opacity-50"
-                disabled={loading}
+                disabled={loading || resetLoading}
             >
                 {loading ? "登入中..." : "登入"}
             </button>

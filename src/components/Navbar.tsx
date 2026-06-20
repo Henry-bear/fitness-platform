@@ -8,7 +8,8 @@ import { toast } from "sonner";
 import MobileMenu from "./MobileMenu";
 import RecordSelectorModal from "./RecordSelectorModal";
 import { AnimatePresence, motion } from "framer-motion";
-import { CalendarDays, Calculator, LayoutDashboard, LogIn, LogOut, Plus, Sparkles, UserPlus, UserRound } from "lucide-react";
+import { CalendarDays, Calculator, ChevronDown, KeyRound, LayoutDashboard, LogIn, LogOut, Plus, Sparkles, UserPlus, UserRound } from "lucide-react";
+import AccountSecurityModal from "./AccountSecurityModal";
 
 
 type Props = {
@@ -41,6 +42,8 @@ export default function Navbar({
 }: Props) {
     const router = useRouter();
     const [showRecordSelector, setShowRecordSelector] = useState(false);
+    const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+    const [showAccountSecurity, setShowAccountSecurity] = useState(false);
     const roleLabel = role === "admin" ? "管理員" : role === "groupCoach" ? "團課教練" : role === "personalTrainer" ? "私人教練" : "會員";
 
     const toggleMenu = () => {
@@ -110,16 +113,41 @@ export default function Navbar({
                                     <Plus className="h-4 w-4" />記錄
                                 </button>
 
-                                <Link
-                                    href="/member"
-                                    className="group flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] py-1.5 pl-1.5 pr-3 transition hover:border-white/20 hover:bg-white/[0.08]"
-                                >
-                                    <span className="flex h-8 w-8 items-center justify-center rounded-full bg-orange-500/15 text-orange-400 transition group-hover:bg-orange-500/25"><UserRound className="h-4 w-4" /></span>
-                                    <span className="flex flex-col text-left leading-tight">
-                                        <span className="max-w-24 truncate text-sm font-medium text-white">{user.displayName || "訪客"}</span>
-                                        <span className="text-[10px] font-medium tracking-wide text-zinc-500">{roleLabel}</span>
-                                    </span>
-                                </Link>
+                                <div className="relative">
+                                    <button
+                                        type="button"
+                                        onClick={() => setProfileMenuOpen((open) => !open)}
+                                        aria-expanded={profileMenuOpen}
+                                        aria-haspopup="menu"
+                                        className="group flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] py-1.5 pl-1.5 pr-2.5 transition hover:border-white/20 hover:bg-white/[0.08]"
+                                    >
+                                        <span className="flex h-8 w-8 items-center justify-center rounded-full bg-orange-500/15 text-orange-400 transition group-hover:bg-orange-500/25"><UserRound className="h-4 w-4" /></span>
+                                        <span className="flex flex-col text-left leading-tight">
+                                            <span className="max-w-24 truncate text-sm font-medium text-white">{user.displayName || "訪客"}</span>
+                                            <span className="text-[10px] font-medium tracking-wide text-zinc-500">{roleLabel}</span>
+                                        </span>
+                                        <ChevronDown className={`h-3.5 w-3.5 text-zinc-500 transition ${profileMenuOpen ? "rotate-180" : ""}`} />
+                                    </button>
+                                    <AnimatePresence>
+                                        {profileMenuOpen && (
+                                            <motion.div
+                                                initial={{ opacity: 0, y: -6, scale: 0.98 }}
+                                                animate={{ opacity: 1, y: 0, scale: 1 }}
+                                                exit={{ opacity: 0, y: -4, scale: 0.98 }}
+                                                transition={{ duration: 0.16 }}
+                                                role="menu"
+                                                className="absolute right-0 top-[calc(100%+0.6rem)] z-50 w-44 rounded-2xl border border-white/10 bg-zinc-950/95 p-2 shadow-2xl shadow-black/60 backdrop-blur-xl"
+                                            >
+                                                <Link href="/member" role="menuitem" onClick={() => setProfileMenuOpen(false)} className="flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-medium text-zinc-200 transition hover:bg-white/[0.07] hover:text-white">
+                                                    <UserRound className="h-4 w-4 text-orange-400" />會員中心
+                                                </Link>
+                                                <button type="button" role="menuitem" onClick={() => { setProfileMenuOpen(false); setShowAccountSecurity(true); }} className="flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-left text-sm font-medium text-zinc-200 transition hover:bg-orange-500/10 hover:text-orange-300">
+                                                    <KeyRound className="h-4 w-4 text-orange-400" />帳密管理
+                                                </button>
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
+                                </div>
 
                                 {(role === "admin" || role === "groupCoach" || role === "personalTrainer") && (
                                     <Link
@@ -197,11 +225,15 @@ export default function Navbar({
                             onRegister={onRegister}
                             user={user}
                             role={role}
+                            onManageCredentials={() => setShowAccountSecurity(true)}
                             closeMenu={() => setMenuOpen(false)}
                         />
                     )}
                 </AnimatePresence>
             </div>
+            {showAccountSecurity && auth.currentUser && (
+                <AccountSecurityModal user={auth.currentUser} onClose={() => setShowAccountSecurity(false)} />
+            )}
         </>
     );
 }

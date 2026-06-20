@@ -11,6 +11,7 @@ type Props = {
     onLogout?: () => void;
     onLogin?: () => void;
     onRegister?: () => void;
+    onManageCredentials?: () => void;
     user?: { displayName: string | null };
     role?: string | null;
     closeMenu: () => void;
@@ -51,6 +52,7 @@ export default function MobileMenu({
     onLogout,
     onLogin,
     onRegister,
+    onManageCredentials,
     user,
     role,
     closeMenu,
@@ -66,6 +68,7 @@ export default function MobileMenu({
             { label: "TDEE計算", link: "/tdee", variant: "indigo" },
             { label: "記錄+", onClick: () => setShowRecordModal(true) },
             { label: user.displayName || "訪客", link: "/member" },
+            { label: "帳密管理", onClick: onManageCredentials, variant: "outline" },
         ];
 
         // admin / groupCoach / personalTrainer 才加入後台選單

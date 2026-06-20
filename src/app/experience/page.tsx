@@ -1,8 +1,6 @@
 "use client";
 
 import Navbar from "@/components/Navbar";
-import { onAuthStateChanged, User } from "firebase/auth";
-import { auth } from "@/lib/firebase";
 import { useCustomClaimRole } from "@/app/hooks/useCustomClaimRole";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -12,11 +10,12 @@ import Image from "next/image";
 import ExperienceBookingModal from "@/components/ExperienceBookingModal";
 import AmbientBackground from "@/components/AmbientBackground";
 import { AnimatePresence } from "framer-motion";
+import { useAuth } from "@/components/AuthProvider";
+import AuthStateScreen from "@/components/AuthStateScreen";
 
 
 export default function ExperiencePage() {
-    const [user, setUser] = useState<User | null>(null);
-    const [authLoading, setAuthLoading] = useState(true);
+    const { user, loading: authLoading, error: authError, retry: retryAuth } = useAuth();
     const { role, loading: roleLoading } = useCustomClaimRole(user ?? null);
     const [showWorkoutModal, setShowWorkoutModal] = useState(false);
     const [showMetricModal, setShowMetricModal] = useState(false);
@@ -24,34 +23,18 @@ export default function ExperiencePage() {
     const [showExperienceModal, setShowExperienceModal] = useState(false);
     const router = useRouter();
 
-    // 登入驗證
     useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
-            if (!firebaseUser) {
-                router.push("/"); // 未登入導回首頁
-                return;
-            }
-            setUser(firebaseUser);
-            setAuthLoading(false);
-        });
+        if (!authLoading && !authError && !user) router.replace("/");
+    }, [authError, authLoading, router, user]);
 
-        return () => unsubscribe();
-    }, [router]);
-
-    if (authLoading || roleLoading) {
-        return (
-            <div className="min-h-screen bg-black text-orange-400 flex justify-center items-center">
-                <div className="animate-spin w-6 h-6 border-4 border-orange-500 border-t-transparent rounded-full"></div>
-                <span className="ml-3 text-lg">驗證中...</span>
-            </div>
-        );
-    }
+    if (authLoading || roleLoading) return <AuthStateScreen />;
+    if (authError) return <AuthStateScreen error={authError} onRetry={retryAuth} />;
+    if (!user) return <AuthStateScreen message="正在返回首頁..." />;
 
     return (
         <>
             <Navbar
                 user={user ? { displayName: user.displayName } : undefined}
-                setUser={setUser}
                 authLoading={authLoading}
                 role={role}
                 roleLoading={roleLoading}

@@ -1,19 +1,18 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { onAuthStateChanged, User } from "firebase/auth";
 import { useRouter } from "next/navigation";
-import { auth } from "@/lib/firebase";
 import { useCustomClaimRole } from "@/app/hooks/useCustomClaimRole";
 import Navbar from "@/components/Navbar";
 import WorkoutForm from "@/components/WorkoutForm";
 import BodyMetricModal from "@/components/BodyMetricModal";
 import TDEECalculator from "@/components/TDEECalculator";
 import AmbientBackground from "@/components/AmbientBackground";
+import { useAuth } from "@/components/AuthProvider";
+import AuthStateScreen from "@/components/AuthStateScreen";
 
 export default function TDEEPage() {
-    const [user, setUser] = useState<User | null>(null);
-    const [authLoading, setAuthLoading] = useState(true);
+    const { user, loading: authLoading, error: authError, retry: retryAuth } = useAuth();
     const { role, loading: roleLoading } = useCustomClaimRole(user ?? null);
     const [showWorkoutModal, setShowWorkoutModal] = useState(false);
     const [showMetricModal, setShowMetricModal] = useState(false);
@@ -21,33 +20,18 @@ export default function TDEEPage() {
     const router = useRouter();
 
     useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
-            if (!firebaseUser) {
-                router.push("/");
-                return;
-            }
-            setUser(firebaseUser);
-            setAuthLoading(false);
-        });
+        if (!authLoading && !authError && !user) router.replace("/");
+    }, [authError, authLoading, router, user]);
 
-        return () => unsubscribe();
-    }, [router]);
-
-    if (authLoading || roleLoading) {
-        return (
-            <div className="min-h-screen bg-black text-orange-400 flex justify-center items-center">
-                <div className="animate-spin w-6 h-6 border-4 border-orange-500 border-t-transparent rounded-full"></div>
-                <span className="ml-3 text-lg">驗證中...</span>
-            </div>
-        );
-    }
+    if (authLoading || roleLoading) return <AuthStateScreen />;
+    if (authError) return <AuthStateScreen error={authError} onRetry={retryAuth} />;
+    if (!user) return <AuthStateScreen message="正在返回首頁..." />;
 
     return (
         <div className="relative isolate min-h-screen overflow-hidden bg-[#070809]">
             <AmbientBackground variant="tdee" />
             <Navbar
                 user={user ? { displayName: user.displayName } : undefined}
-                setUser={setUser}
                 authLoading={authLoading}
                 role={role}
                 roleLoading={roleLoading}

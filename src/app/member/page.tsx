@@ -1,21 +1,21 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { onAuthStateChanged, User } from "firebase/auth";
 import { useRouter } from "next/navigation";
-import { auth } from "@/lib/firebase";
 import Navbar from "@/components/Navbar";
 import LoginModal from "@/components/LoginModal";
 import RegisterModal from "@/components/RegisterModal";
 import WorkoutForm from "@/components/WorkoutForm";
 import BodyMetricModal from "@/components/BodyMetricModal";
 import BodyMetricChart from "@/components/BodyMetricChart";
-import GlowWaveText from "@/components/GlowWaveText";
 import LatestBodyMetric from "@/components/LatestBodyMetric";
 import { useCustomClaimRole } from "../hooks/useCustomClaimRole";
 import BookingBell from "@/components/BookingBell";
 import { AnimatePresence, motion } from "framer-motion";
 import AmbientBackground from "@/components/AmbientBackground";
+import { useAuth } from "@/components/AuthProvider";
+import AuthStateScreen from "@/components/AuthStateScreen";
+import MemberHero from "@/components/MemberHero";
 
 
 const motivationalQuotes = [
@@ -29,12 +29,11 @@ const motivationalQuotes = [
 ];
 
 export default function MemberPage() {
-    const [user, setUser] = useState<User | null>(null);
+    const { user, loading: authLoading, error: authError, retry: retryAuth } = useAuth();
     const [showLogin, setShowLogin] = useState(false);
     const [showRegister, setShowRegister] = useState(false);
     const [showWorkoutModal, setShowWorkoutModal] = useState(false);
     const [showMetricModal, setShowMetricModal] = useState(false);
-    const [authLoading, setAuthLoading] = useState(true);
     const [quote, setQuote] = useState("");
     const [refreshTrigger, setRefreshTrigger] = useState(Date.now());
     const { role, loading: roleLoading } = useCustomClaimRole(user ?? null);
@@ -43,26 +42,22 @@ export default function MemberPage() {
     const router = useRouter();
 
     useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
-            if (firebaseUser) {
-                setUser(firebaseUser);
-                setAuthLoading(false);
-            } else {
-                router.push("/"); // 未登入導向首頁
-            }
-
-        });
-        // quote
         const randomIndex = Math.floor(Math.random() * motivationalQuotes.length);
         setQuote(motivationalQuotes[randomIndex])
+    }, []);
 
-        return () => unsubscribe();
-    }, [router]);
+    useEffect(() => {
+        if (!authLoading && !authError && !user) router.replace("/");
+    }, [authError, authLoading, router, user]);
 
 
     const handleRefresh = () => {
         setRefreshTrigger(Date.now());
     };
+
+    if (authLoading || roleLoading) return <AuthStateScreen />;
+    if (authError) return <AuthStateScreen error={authError} onRetry={retryAuth} />;
+    if (!user) return <AuthStateScreen message="正在返回首頁..." />;
 
     return (
         <>
@@ -95,7 +90,6 @@ export default function MemberPage() {
             <Navbar
                 onLogin={() => setShowLogin(true)}
                 onRegister={() => setShowRegister(true)}
-                setUser={setUser}
                 onAddMetric={() => setShowMetricModal(true)}
                 onAddWorkout={() => setShowWorkoutModal(true)}
                 user={user ? { displayName: user.displayName } : undefined}
@@ -109,15 +103,7 @@ export default function MemberPage() {
                 <AmbientBackground variant={activeSection} />
 
                 <div className="relative z-10 mx-auto w-full max-w-6xl">
-                    {/* 歡迎區塊 */}
-                    <h1 className="welcome-animate mb-2 text-2xl font-bold text-orange-500">
-                        {user ? `歡迎你，${user.displayName || "訪客"}！` : "載入中..."}
-                    </h1>
-                    <GlowWaveText
-                        text={quote}
-                        colorMode="white"
-                        className="mb-6 text-lg italic"
-                    />
+                    <MemberHero name={user.displayName || "會員"} quote={quote} />
 
                     <div
                         className="mx-auto mb-8 grid w-full max-w-md grid-cols-2 rounded-xl border border-white/10 bg-zinc-950/65 p-1.5 shadow-lg shadow-black/30 backdrop-blur-md"
