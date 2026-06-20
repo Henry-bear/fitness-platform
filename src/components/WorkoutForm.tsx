@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { User } from "firebase/auth";
@@ -82,7 +82,7 @@ function NumericStepper({ label, unit, value, step, min, max, onChange }: {
             <p className="text-[11px] font-medium text-zinc-500">{label}</p>
             <div className="mt-2 flex items-center justify-between gap-1">
                 <button type="button" onClick={() => update(-1)} aria-label={`減少${label}`} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-zinc-300 transition hover:border-orange-400/40 hover:text-orange-300"><Minus className="h-4 w-4" /></button>
-                <div className="min-w-0">
+                <div className="min-w-12 flex-1 text-center">
                     <span className="block truncate text-lg font-bold text-white">{value}</span>
                     <span className="block text-[10px] text-zinc-600">{unit}</span>
                 </div>
@@ -102,11 +102,23 @@ export default function WorkoutForm({ user, onClose, onSaved }: Props) {
     const [exercises, setExercises] = useState<Exercise[]>([createExercise()]);
     const [expandedIndex, setExpandedIndex] = useState<number | null>(0);
     const [date, setDate] = useState(() => toDateValue(new Date()));
+    const dateInputRef = useRef<HTMLInputElement>(null);
     const today = toDateValue(new Date());
     const yesterdayDate = new Date();
     yesterdayDate.setDate(yesterdayDate.getDate() - 1);
     const yesterday = toDateValue(yesterdayDate);
     const formattedDate = new Intl.DateTimeFormat("zh-TW", { month: "numeric", day: "numeric", weekday: "short" }).format(new Date(`${date}T12:00:00`));
+
+    const openDatePicker = () => {
+        const input = dateInputRef.current;
+        if (!input) return;
+        try {
+            input.showPicker();
+        } catch {
+            input.focus();
+            input.click();
+        }
+    };
 
     const handleChange = <K extends keyof Exercise>(index: number, field: K, value: Exercise[K]) => {
         const updated = [...exercises];
@@ -192,10 +204,10 @@ export default function WorkoutForm({ user, onClose, onSaved }: Props) {
                         <div className="grid grid-cols-3 gap-2">
                             <button type="button" onClick={() => setDate(today)} className={`rounded-xl px-2 py-2.5 text-sm font-semibold transition ${date === today ? "bg-orange-500 text-white" : "bg-white/5 text-zinc-400 hover:bg-white/10"}`}>今天</button>
                             <button type="button" onClick={() => setDate(yesterday)} className={`rounded-xl px-2 py-2.5 text-sm font-semibold transition ${date === yesterday ? "bg-orange-500 text-white" : "bg-white/5 text-zinc-400 hover:bg-white/10"}`}>昨天</button>
-                            <label className={`relative flex cursor-pointer items-center justify-center overflow-hidden rounded-xl px-2 py-2.5 text-sm font-semibold transition ${date !== today && date !== yesterday ? "bg-orange-500 text-white" : "bg-white/5 text-zinc-400 hover:bg-white/10"}`}>
-                                選日期
-                                <input aria-label="選擇其他訓練日期" type="date" value={date} onChange={(event) => setDate(event.target.value)} max={today} className="absolute inset-0 h-full w-full cursor-pointer opacity-0" />
-                            </label>
+                            <div className="relative">
+                                <button type="button" onClick={openDatePicker} className={`h-full w-full rounded-xl px-2 py-2.5 text-sm font-semibold transition ${date !== today && date !== yesterday ? "bg-orange-500 text-white" : "bg-white/5 text-zinc-400 hover:bg-white/10"}`}>選日期</button>
+                                <input ref={dateInputRef} aria-label="選擇其他訓練日期" type="date" value={date} onChange={(event) => setDate(event.target.value)} max={today} tabIndex={-1} className="pointer-events-none absolute bottom-0 left-1/2 h-px w-px opacity-0" />
+                            </div>
                         </div>
                     </div>
                     {exercises.map((exercise, index) => {
@@ -243,8 +255,8 @@ export default function WorkoutForm({ user, onClose, onSaved }: Props) {
                                         )}
 
                                         <div>
-                                            <p className="mb-2 text-xs font-medium text-zinc-500">3. 需要時再微調</p>
-                                            <div className="grid min-w-0 grid-cols-3 gap-2">
+                                            <p className="mb-2 text-xs font-medium text-zinc-500">3. 調整重量、組數、次數</p>
+                                            <div className="grid min-w-0 grid-cols-1 gap-2 sm:grid-cols-3">
                                                 <NumericStepper label="重量" unit="kg" value={exercise.weight} step={2.5} min={2.5} max={350} onChange={(value) => handleChange(index, "weight", value)} />
                                                 <NumericStepper label="組數" unit="組" value={exercise.sets} step={1} min={1} max={20} onChange={(value) => handleChange(index, "sets", value)} />
                                                 <NumericStepper label="次數" unit="下" value={exercise.reps} step={1} min={1} max={100} onChange={(value) => handleChange(index, "reps", value)} />
