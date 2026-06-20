@@ -205,7 +205,11 @@ export default function WorkoutForm({ user, onClose, onSaved }: Props) {
                             <button type="button" onClick={() => setDate(today)} className={`rounded-xl px-2 py-2.5 text-sm font-semibold transition ${date === today ? "bg-orange-500 text-white" : "bg-white/5 text-zinc-400 hover:bg-white/10"}`}>今天</button>
                             <button type="button" onClick={() => setDate(yesterday)} className={`rounded-xl px-2 py-2.5 text-sm font-semibold transition ${date === yesterday ? "bg-orange-500 text-white" : "bg-white/5 text-zinc-400 hover:bg-white/10"}`}>昨天</button>
                             <div className="relative">
-                                <button type="button" onClick={openDatePicker} className={`h-full w-full rounded-xl px-2 py-2.5 text-sm font-semibold transition ${date !== today && date !== yesterday ? "bg-orange-500 text-white" : "bg-white/5 text-zinc-400 hover:bg-white/10"}`}>選日期</button>
+                                <label className={`relative flex h-full cursor-pointer items-center justify-center overflow-hidden rounded-xl px-2 py-2.5 text-sm font-semibold transition sm:hidden ${date !== today && date !== yesterday ? "bg-orange-500 text-white" : "bg-white/5 text-zinc-400"}`}>
+                                    選日期
+                                    <input aria-label="選擇其他訓練日期（手機）" type="date" value={date} onChange={(event) => setDate(event.target.value)} max={today} className="absolute inset-0 h-full w-full cursor-pointer opacity-0" />
+                                </label>
+                                <button type="button" onClick={openDatePicker} className={`hidden h-full w-full rounded-xl px-2 py-2.5 text-sm font-semibold transition sm:block ${date !== today && date !== yesterday ? "bg-orange-500 text-white" : "bg-white/5 text-zinc-400 hover:bg-white/10"}`}>選日期</button>
                                 <input ref={dateInputRef} aria-label="選擇其他訓練日期" type="date" value={date} onChange={(event) => setDate(event.target.value)} max={today} tabIndex={-1} className="pointer-events-none absolute bottom-0 left-1/2 h-px w-px opacity-0" />
                             </div>
                         </div>
