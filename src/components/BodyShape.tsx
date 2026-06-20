@@ -21,6 +21,8 @@ export default function BodyShape({ height, weight, bodyFat, bmi }: Props) {
     const heightScale = clamp(height / 170, 0.9, 1.08);
     const silhouetteColor = bodyFat < 15 ? "#38bdf8" : bodyFat < 25 ? "#22c55e" : bodyFat < 30 ? "#f97316" : "#ef4444";
     const status = bmi < 18.5 ? "偏輕" : bmi < 24 && bodyFat < 25 ? "標準" : bmi < 27 && bodyFat < 30 ? "略高" : "需留意";
+    const bmiLabel = bmi < 18.5 ? "過輕" : bmi < 24 ? "正常" : bmi < 27 ? "過重" : "肥胖";
+    const fatLabel = bodyFat < 15 ? "精壯" : bodyFat < 25 ? "標準" : bodyFat < 30 ? "過高" : "肥胖";
 
     return (
         <motion.section
@@ -68,8 +70,8 @@ export default function BodyShape({ height, weight, bodyFat, bmi }: Props) {
                 <div className="space-y-2 text-right">
                     <div><p className="text-[11px] text-zinc-500">身高</p><p className="font-semibold text-white">{height} cm</p></div>
                     <div><p className="text-[11px] text-zinc-500">體重</p><p className="font-semibold text-white">{weight} kg</p></div>
-                    <div><p className="text-[11px] text-zinc-500">BMI</p><p className="font-semibold" style={{ color: silhouetteColor }}>{bmi.toFixed(1)}</p></div>
-                    <div><p className="text-[11px] text-zinc-500">體脂</p><p className="font-semibold" style={{ color: silhouetteColor }}>{bodyFat}%</p></div>
+                    <div><p className="text-[11px] text-zinc-500">BMI</p><p className="font-semibold" style={{ color: silhouetteColor }}>{bmi.toFixed(1)}</p><p className="text-[10px] text-zinc-500">{bmiLabel}</p></div>
+                    <div><p className="text-[11px] text-zinc-500">體脂</p><p className="font-semibold" style={{ color: silhouetteColor }}>{bodyFat}%</p><p className="text-[10px] text-zinc-500">{fatLabel}</p></div>
                 </div>
             </div>
             <p className="relative mt-2 border-t border-white/10 pt-3 text-[11px] leading-5 text-zinc-500">輪廓用於呈現數值變化趨勢，不代表醫療或精密體型判定。</p>

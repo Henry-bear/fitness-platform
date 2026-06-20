@@ -6,7 +6,7 @@ import { db } from "@/lib/firebase";
 import { User } from "firebase/auth";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
-import { CalendarDays, ChevronDown, Dumbbell, Plus, Save, Trash2, X } from "lucide-react";
+import { CalendarDays, ChevronDown, Dumbbell, Minus, Plus, Save, Trash2, X } from "lucide-react";
 import ModalPortal from "./ModalPortal";
 
 const partOptions = {
@@ -47,6 +47,51 @@ interface Exercise {
     reps: string;
 }
 
+const createExercise = (): Exercise => ({
+    part: "",
+    type: "",
+    weight: "20",
+    sets: "3",
+    reps: "10",
+});
+
+const toDateValue = (value: Date) => {
+    const year = value.getFullYear();
+    const month = String(value.getMonth() + 1).padStart(2, "0");
+    const day = String(value.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+};
+
+function NumericStepper({ label, unit, value, step, min, max, onChange }: {
+    label: string;
+    unit: string;
+    value: string;
+    step: number;
+    min: number;
+    max: number;
+    onChange: (value: string) => void;
+}) {
+    const update = (direction: -1 | 1) => {
+        const current = Number(value) || min;
+        const next = Math.min(max, Math.max(min, current + direction * step));
+        onChange(Number.isInteger(next) ? String(next) : next.toFixed(1));
+    };
+
+    return (
+        <div className="min-w-0 rounded-2xl border border-white/10 bg-zinc-900/75 p-2.5 text-center">
+            <p className="text-[11px] font-medium text-zinc-500">{label}</p>
+            <div className="mt-2 flex items-center justify-between gap-1">
+                <button type="button" onClick={() => update(-1)} aria-label={`減少${label}`} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-zinc-300 transition hover:border-orange-400/40 hover:text-orange-300"><Minus className="h-4 w-4" /></button>
+                <div className="min-w-0">
+                    <span className="block truncate text-lg font-bold text-white">{value}</span>
+                    <span className="block text-[10px] text-zinc-600">{unit}</span>
+                </div>
+                <button type="button" onClick={() => update(1)} aria-label={`增加${label}`} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-zinc-300 transition hover:border-orange-400/40 hover:text-orange-300"><Plus className="h-4 w-4" /></button>
+            </div>
+        </div>
+    );
+}
+
 type Props = {
     user: User;
     onClose?: () => void;
@@ -54,16 +99,14 @@ type Props = {
 };
 
 export default function WorkoutForm({ user, onClose, onSaved }: Props) {
-    const [exercises, setExercises] = useState<Exercise[]>([{
-        part: "",
-        type: "",
-        weight: "",
-        sets: "",
-        reps: "",
-    }]);
+    const [exercises, setExercises] = useState<Exercise[]>([createExercise()]);
     const [expandedIndex, setExpandedIndex] = useState<number | null>(0);
-    const [date, setDate] = useState("");
-    const today = new Date().toISOString().split("T")[0];
+    const [date, setDate] = useState(() => toDateValue(new Date()));
+    const today = toDateValue(new Date());
+    const yesterdayDate = new Date();
+    yesterdayDate.setDate(yesterdayDate.getDate() - 1);
+    const yesterday = toDateValue(yesterdayDate);
+    const formattedDate = new Intl.DateTimeFormat("zh-TW", { month: "numeric", day: "numeric", weekday: "short" }).format(new Date(`${date}T12:00:00`));
 
     const handleChange = <K extends keyof Exercise>(index: number, field: K, value: Exercise[K]) => {
         const updated = [...exercises];
@@ -73,7 +116,7 @@ export default function WorkoutForm({ user, onClose, onSaved }: Props) {
     };
 
     const addExercise = () => {
-        setExercises([...exercises, { part: "", type: "", weight: "", sets: "", reps: "" }]);
+        setExercises([...exercises, createExercise()]);
         setExpandedIndex(exercises.length);
     };
 
@@ -103,8 +146,8 @@ export default function WorkoutForm({ user, onClose, onSaved }: Props) {
             toast.success("訓練紀錄已成功儲存！");
             if (onClose) onClose();
             if (onSaved) onSaved();
-            setExercises([{ part: "", type: "", weight: "", sets: "", reps: "" }]);
-            setDate("");
+            setExercises([createExercise()]);
+            setDate(today);
             setExpandedIndex(0);
         } catch (error) {
             console.error("儲存失敗", error);
@@ -136,11 +179,25 @@ export default function WorkoutForm({ user, onClose, onSaved }: Props) {
                     <div className="rounded-2xl bg-orange-500/15 p-3 text-orange-400"><Dumbbell className="h-6 w-6" /></div>
                     <div>
                         <h2 id="workout-form-title" className="text-xl font-bold text-white">新增訓練紀錄</h2>
-                        <p className="mt-0.5 text-sm text-zinc-400">記下重量、組數與次數</p>
+                        <p className="mt-0.5 text-sm text-zinc-400">選擇動作，快速記錄。</p>
                     </div>
                 </div>
 
                 <form onSubmit={handleSubmit} className="relative min-w-0 max-w-full">
+                    <div className="mb-4 rounded-2xl border border-white/10 bg-white/[0.035] p-3">
+                        <div className="mb-2 flex items-center justify-between gap-3">
+                            <label className="flex items-center gap-2 text-sm font-medium text-zinc-300"><CalendarDays className="h-4 w-4 text-orange-400" />訓練日期</label>
+                            <span className="text-xs font-medium text-orange-300">{formattedDate}</span>
+                        </div>
+                        <div className="grid grid-cols-3 gap-2">
+                            <button type="button" onClick={() => setDate(today)} className={`rounded-xl px-2 py-2.5 text-sm font-semibold transition ${date === today ? "bg-orange-500 text-white" : "bg-white/5 text-zinc-400 hover:bg-white/10"}`}>今天</button>
+                            <button type="button" onClick={() => setDate(yesterday)} className={`rounded-xl px-2 py-2.5 text-sm font-semibold transition ${date === yesterday ? "bg-orange-500 text-white" : "bg-white/5 text-zinc-400 hover:bg-white/10"}`}>昨天</button>
+                            <label className={`relative flex cursor-pointer items-center justify-center overflow-hidden rounded-xl px-2 py-2.5 text-sm font-semibold transition ${date !== today && date !== yesterday ? "bg-orange-500 text-white" : "bg-white/5 text-zinc-400 hover:bg-white/10"}`}>
+                                選日期
+                                <input aria-label="選擇其他訓練日期" type="date" value={date} onChange={(event) => setDate(event.target.value)} max={today} className="absolute inset-0 h-full w-full cursor-pointer opacity-0" />
+                            </label>
+                        </div>
+                    </div>
                     {exercises.map((exercise, index) => {
                         const isExpanded = expandedIndex === index;
                         const currentOptions = exercise.part && exercise.part in partOptions ? partOptions[exercise.part as PartKey] : [];
@@ -166,33 +223,32 @@ export default function WorkoutForm({ user, onClose, onSaved }: Props) {
                                 </div>
                                 {isExpanded && (
                                     <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="space-y-3 border-t border-white/10 px-3 pb-4 pt-3">
-                                        <select
-                                            value={exercise.part}
-                                            onChange={(e) => handleChange(index, "part", e.target.value as Exercise["part"])}
-                                            className="w-full rounded-xl border border-white/10 bg-zinc-900 px-3 py-3 text-white outline-none transition focus:border-orange-500/70 focus:ring-2 focus:ring-orange-500/15"
-                                        >
-                                            <option value="">請選擇部位</option>
-                                            {Object.keys(partOptions).map((p) => (
-                                                <option key={p} value={p}>{p}</option>
-                                            ))}
-                                        </select>
+                                        <div>
+                                            <p className="mb-2 text-xs font-medium text-zinc-500">1. 選擇訓練部位</p>
+                                            <div className="grid grid-cols-3 gap-2">
+                                                {(Object.keys(partOptions) as PartKey[]).map((part) => {
+                                                    const selected = exercise.part === part;
+                                                    return <button key={part} type="button" onClick={() => handleChange(index, "part", part)} className={`flex min-h-12 items-center justify-center gap-2 rounded-xl border px-2 py-2.5 text-sm font-semibold transition ${selected ? "border-orange-400/60 bg-orange-500/15 text-orange-300" : "border-white/10 bg-zinc-900/70 text-zinc-400 hover:border-white/20 hover:text-white"}`}><span className={`h-1.5 w-1.5 rounded-full ${selected ? "bg-orange-400 shadow-[0_0_8px_rgba(251,146,60,0.8)]" : "bg-zinc-700"}`} />{part}</button>;
+                                                })}
+                                            </div>
+                                        </div>
 
-                                        <select
-                                            value={exercise.type}
-                                            onChange={(e) => handleChange(index, "type", e.target.value)}
-                                            disabled={!exercise.part}
-                                            className="w-full rounded-xl border border-white/10 bg-zinc-900 px-3 py-3 text-white outline-none transition focus:border-orange-500/70 focus:ring-2 focus:ring-orange-500/15 disabled:opacity-40"
-                                        >
-                                            <option value="">請選擇項目</option>
-                                            {currentOptions.map((t) => (
-                                                <option key={t} value={t}>{t}</option>
-                                            ))}
-                                        </select>
+                                        {exercise.part && (
+                                            <div>
+                                                <p className="mb-2 text-xs font-medium text-zinc-500">2. 點選訓練項目</p>
+                                                <div className="grid grid-cols-2 gap-2">
+                                                    {currentOptions.map((type) => <button key={type} type="button" onClick={() => handleChange(index, "type", type)} className={`min-h-11 rounded-xl border px-2 py-2 text-sm font-medium leading-tight transition ${exercise.type === type ? "border-orange-400/60 bg-orange-500 text-white shadow-lg shadow-orange-950/25" : "border-white/10 bg-zinc-900/70 text-zinc-300 hover:border-orange-400/30 hover:bg-orange-500/10"}`}>{type}</button>)}
+                                                </div>
+                                            </div>
+                                        )}
 
-                                        <div className="grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-3">
-                                            <input type="number" inputMode="decimal" min="1" value={exercise.weight} onChange={(e) => handleChange(index, "weight", e.target.value)} placeholder="重量 kg" className="min-w-0 w-full max-w-full rounded-xl border border-white/10 bg-zinc-900 px-3 py-3 text-white outline-none transition placeholder:text-zinc-600 focus:border-orange-500/70 focus:ring-2 focus:ring-orange-500/15" />
-                                            <input type="number" inputMode="numeric" min="1" value={exercise.sets} onChange={(e) => handleChange(index, "sets", e.target.value)} placeholder="組數" className="min-w-0 w-full max-w-full rounded-xl border border-white/10 bg-zinc-900 px-3 py-3 text-white outline-none transition placeholder:text-zinc-600 focus:border-orange-500/70 focus:ring-2 focus:ring-orange-500/15" />
-                                            <input type="number" inputMode="numeric" min="1" value={exercise.reps} onChange={(e) => handleChange(index, "reps", e.target.value)} placeholder="次數" className="min-w-0 w-full max-w-full rounded-xl border border-white/10 bg-zinc-900 px-3 py-3 text-white outline-none transition placeholder:text-zinc-600 focus:border-orange-500/70 focus:ring-2 focus:ring-orange-500/15" />
+                                        <div>
+                                            <p className="mb-2 text-xs font-medium text-zinc-500">3. 需要時再微調</p>
+                                            <div className="grid min-w-0 grid-cols-3 gap-2">
+                                                <NumericStepper label="重量" unit="kg" value={exercise.weight} step={2.5} min={2.5} max={350} onChange={(value) => handleChange(index, "weight", value)} />
+                                                <NumericStepper label="組數" unit="組" value={exercise.sets} step={1} min={1} max={20} onChange={(value) => handleChange(index, "sets", value)} />
+                                                <NumericStepper label="次數" unit="下" value={exercise.reps} step={1} min={1} max={100} onChange={(value) => handleChange(index, "reps", value)} />
+                                            </div>
                                         </div>
                                     </motion.div>
                                 )}
@@ -203,11 +259,6 @@ export default function WorkoutForm({ user, onClose, onSaved }: Props) {
                     <button type="button" onClick={addExercise} className="mb-4 flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-orange-500/60 px-3 py-3 text-sm font-medium text-orange-400 transition hover:border-orange-400 hover:bg-orange-500/10">
                         <Plus className="h-4 w-4" />新增訓練項目
                     </button>
-
-                    <div className="mb-4 min-w-0 max-w-full overflow-hidden">
-                        <label htmlFor="workout-date" className="mb-2 flex items-center gap-2 text-sm font-medium text-zinc-300"><CalendarDays className="h-4 w-4 text-orange-400" />訓練日期</label>
-                        <input id="workout-date" type="date" value={date} onChange={(e) => setDate(e.target.value)} max={today} className="block min-w-0 w-full max-w-full rounded-xl border border-white/10 bg-zinc-900 px-3 py-3 text-white outline-none transition focus:border-orange-500/70 focus:ring-2 focus:ring-orange-500/15" />
-                    </div>
 
                     <div className="grid grid-cols-2 gap-3 border-t border-white/10 pt-4">
                         <button type="button" onClick={onClose} className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 font-medium text-zinc-300 transition hover:bg-white/10 hover:text-white">取消</button>

@@ -50,14 +50,14 @@ export default function MemberHero({ name, quote }: { name: string; quote: strin
                     </div>
                 </div>
 
-                <div className="relative mx-auto hidden h-52 w-52 items-center justify-center md:flex">
+                <div className="relative mx-auto flex h-44 w-44 items-center justify-center md:h-52 md:w-52">
                     <motion.div aria-hidden="true" animate={reduceMotion ? undefined : { rotate: 360 }} transition={{ duration: 18, repeat: Infinity, ease: "linear" }} className="absolute inset-0 rounded-full border border-dashed border-orange-400/25">
                         <span className="absolute left-1/2 top-[-5px] h-2.5 w-2.5 -translate-x-1/2 rounded-full bg-orange-400 shadow-[0_0_18px_rgba(251,146,60,0.9)]" />
                     </motion.div>
                     <motion.div aria-hidden="true" animate={reduceMotion ? undefined : { rotate: -360 }} transition={{ duration: 12, repeat: Infinity, ease: "linear" }} className="absolute inset-5 rounded-full border border-orange-400/15 border-l-orange-400/60 border-r-amber-300/40" />
-                    <motion.div animate={reduceMotion ? undefined : { scale: [1, 1.06, 1], boxShadow: ["0 0 20px rgba(249,115,22,.12)", "0 0 42px rgba(249,115,22,.28)", "0 0 20px rgba(249,115,22,.12)"] }} transition={{ duration: 2.8, repeat: Infinity, ease: "easeInOut" }} className="flex h-28 w-28 flex-col items-center justify-center rounded-full border border-orange-400/25 bg-orange-500/10 text-center backdrop-blur-md">
-                        <Dumbbell className="h-7 w-7 text-orange-400" />
-                        <span className="mt-2 text-[10px] font-bold tracking-[0.18em] text-orange-200">KEEP MOVING</span>
+                    <motion.div animate={reduceMotion ? undefined : { scale: [1, 1.06, 1], boxShadow: ["0 0 20px rgba(249,115,22,.12)", "0 0 42px rgba(249,115,22,.28)", "0 0 20px rgba(249,115,22,.12)"] }} transition={{ duration: 2.8, repeat: Infinity, ease: "easeInOut" }} className="flex h-24 w-24 flex-col items-center justify-center rounded-full border border-orange-400/25 bg-orange-500/10 text-center backdrop-blur-md md:h-28 md:w-28">
+                        <Dumbbell className="h-6 w-6 text-orange-400 md:h-7 md:w-7" />
+                        <span className="mt-2 text-[9px] font-bold tracking-[0.14em] text-orange-200 md:text-[10px] md:tracking-[0.18em]">KEEP MOVING</span>
                     </motion.div>
                     <div className="absolute bottom-1 flex h-8 items-end gap-1" aria-hidden="true">
                         {[12, 22, 16, 29, 19, 25, 13].map((height, index) => (
