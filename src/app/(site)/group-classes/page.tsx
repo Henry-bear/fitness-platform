@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { db } from "@/lib/firebase";
 import { useRouter } from "next/navigation";
-import { collection, getDocs, serverTimestamp, Timestamp, query, where, doc, deleteDoc, setDoc } from "firebase/firestore";
+import { collection, getDocs, onSnapshot, serverTimestamp, Timestamp, query, where, doc, deleteDoc, setDoc } from "firebase/firestore";
 import dayjs from "dayjs";
 import isBetween from "dayjs/plugin/isBetween";
 dayjs.extend(isBetween);
@@ -73,15 +73,14 @@ export default function GroupClassesPage() {
 
     // 抓取課表資料
     useEffect(() => {
-        const fetchData = async () => {
-            const snapshot = await getDocs(collection(db, "groupSchedule"));
+        const unsubscribe = onSnapshot(collection(db, "groupSchedule"), (snapshot) => {
             const list: GroupClass[] = snapshot.docs.map((doc) => ({
                 id: doc.id,
                 ...(doc.data() as Omit<GroupClass, "id">),
             }));
             setClasses(list);
-        };
-        fetchData();
+        });
+        return () => unsubscribe();
     }, []);
     // 取消課程函式
     const handleCancelBooking = async (groupClassId: string) => {
@@ -133,9 +132,10 @@ export default function GroupClassesPage() {
     };
 
     const getDayClasses = (day: string) => {
-        const today = dayjs();
-        const startOfWeek = today.startOf("week").add(1, "day");// 週一
-        const endOfWeek = startOfWeek.add(6, "day"); // 週日
+        const today = dayjs().startOf("day");
+        const daysSinceMonday = (today.day() + 6) % 7;
+        const startOfWeek = today.subtract(daysSinceMonday, "day");
+        const endOfWeek = startOfWeek.add(6, "day").endOf("day");
 
         const filtered = classes.filter((item) => {
             const rawDate = item.date instanceof Timestamp ? item.date.toDate() : new Date(item.date);
